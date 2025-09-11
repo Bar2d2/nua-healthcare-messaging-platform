@@ -1,18 +1,20 @@
 # Sidekiq Configuration for High-Performance Background Jobs
 # Optimized for message system background processing
 
-# Environment-specific Redis configuration
-redis_config = case Rails.env
-               when 'test'
-                 # Use separate test database to avoid conflicts
-                 { url: ENV.fetch('REDIS_URL', 'redis://localhost:6379/1') }
-               when 'development'
-                 # Use default database with graceful fallback
-                 { url: ENV.fetch('REDIS_URL', 'redis://localhost:6379/0') }
-               else
-                 # Production configuration
-                 { url: ENV.fetch('REDIS_URL') }
-               end
+# Skip Sidekiq initialization during asset precompilation
+unless ENV['RAILS_GROUPS'] == 'assets' || ENV['SECRET_KEY_BASE_DUMMY']
+  # Environment-specific Redis configuration
+  redis_config = case Rails.env
+                 when 'test'
+                   # Use separate test database to avoid conflicts
+                   { url: ENV.fetch('REDIS_URL', 'redis://localhost:6379/1') }
+                 when 'development'
+                   # Use default database with graceful fallback
+                   { url: ENV.fetch('REDIS_URL', 'redis://localhost:6379/0') }
+                 else
+                   # Production configuration with fallback
+                   { url: ENV.fetch('REDIS_URL', 'redis://localhost:6379/1') }
+                 end
 
 # Test Redis connection before configuring Sidekiq
 redis_available = begin
@@ -75,4 +77,5 @@ if Rails.env.development?
 
   # Show Sidekiq activity in development for debugging
   Sidekiq.logger.level = Logger::INFO
+end
 end

@@ -4,6 +4,11 @@
 
 > **Enterprise-grade medical communication platform with prescription management, real-time messaging, and secure payment processing.**
 
+## 🌐 **Live Demo**
+**🚀 [Try the live application here](https://nua-healthcare-app.fly.dev)**
+
+*Experience the full messaging system with realistic medical scenarios, prescription management, and real-time updates.*
+
 **🎯 Project Board**: [NUA Kanban Board](https://bartekozdoba.atlassian.net/browse/NUA-8)
 
 ## 📋 Table of Contents
