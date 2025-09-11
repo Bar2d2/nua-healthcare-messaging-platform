@@ -46,6 +46,7 @@ group :development do
   gem 'foreman', '~> 0.87'
   gem 'pry-byebug', '~> 3.10'
   gem 'web-console', '~> 4.2'
+  gem "dockerfile-rails", ">= 1.7"
 end
 
 group :test do
