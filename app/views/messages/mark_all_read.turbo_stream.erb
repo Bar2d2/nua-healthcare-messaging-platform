@@ -1,0 +1,31 @@
+<% current_user.inbox.reload %>
+
+<!-- Update the unread count badge -->
+<%= turbo_stream.update "inbox_unread_count_#{current_user.inbox.id}" do %>
+  <%= render partial: 'inboxes/unread_count', locals: { inbox: current_user.inbox } %>
+<% end %>
+
+<!-- Update the inbox list to remove "new" badges -->
+<%= turbo_stream.update "inbox-list" do %>
+  <% if current_user.inbox.messages.exists? %>
+    <%= render partial: 'messages/partials/list/received_message_item', collection: current_user.inbox.messages.includes(:outbox, :parent_message, outbox: :user).order(created_at: :desc).limit(10), as: :message %>
+  <% else %>
+    <div class="text-center py-4">
+      <p class="text-muted mb-3"><%= t('messages.inbox.no_messages') %></p>
+      <%= link_to t('messages.inbox.start_conversation'), new_message_path, class: "btn btn-primary" %>
+    </div>
+  <% end %>
+<% end %>
+
+<!-- Remove the Mark All as Read button since there are no unread messages -->
+<%= turbo_stream.update "mark_all_read_button" do %>
+  <!-- Button removed since all messages are now read -->
+<% end %>
+
+<!-- Show success message -->
+<%= turbo_stream.update "alerts-container" do %>
+  <div class="alert alert-success alert-dismissible fade show" role="alert">
+    <%= t('messages.notice.all_marked_read') %>
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+  </div>
+<% end %>

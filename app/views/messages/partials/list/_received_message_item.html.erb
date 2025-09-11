@@ -1,0 +1,31 @@
+<% if prescription_request_message?(message) %>
+  <%= render 'messages/partials/list/prescription_request_message_item', message: message %>
+<% elsif current_user.is_patient? && prescription_ready_message?(message) %>
+  <%= render 'messages/partials/list/prescription_ready_message_item', message: message %>
+<% else %>
+  <%= link_to message_path(message), class: 'list-group-item list-group-item-action d-flex gap-3 py-3', id: dom_id(message) do %>
+    <div class="d-flex gap-2 w-100 justify-content-between">
+      <div>
+        <h6 class="mb-0">
+          <% if message.parent_message_id.present? %>
+            <small class="text-muted me-1">↳</small>
+          <% end %>
+          <% if message.outbox.user.is_doctor? %>Dr.<% end %>
+          <%= message.outbox.user.full_name %>
+        </h6>
+        <div class="mb-0 opacity-75"><%= simple_format(message.body.truncate(200), {}, { sanitize: true }) %></div>
+        <small class="text-muted"><%= t('.received_message') %></small>
+      </div>
+      <div class="text-end">
+        <small class="opacity-50 text-nowrap d-block">
+          <%= time_ago_in_words(message.created_at) %> ago
+        </small>
+        <% unless message.read_already? %>
+          <small class="text-muted">
+            <span class="badge bg-primary"><%= t('.new') %></span>
+          </small>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+<% end %>

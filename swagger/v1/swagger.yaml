@@ -1,0 +1,341 @@
+---
+openapi: 3.0.1
+info:
+  title: Healthcare Messaging API V1
+  version: v1
+  description: A smart messaging system for healthcare communication between patients,
+    doctors, and admins.
+  contact:
+    name: Healthcare Messaging Team
+    email: api@healthcaremessaging.com
+paths:
+  "/api/v1/health":
+    get:
+      summary: Health check
+      tags:
+      - System
+      description: Check the health status of the API and its dependencies
+      security: []
+      responses:
+        '200':
+          description: system healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      status:
+                        type: string
+                        enum:
+                        - ok
+                        - error
+                        example: ok
+                      timestamp:
+                        type: string
+                        format: date-time
+                      version:
+                        type: string
+                        example: 1.0.0
+                      environment:
+                        type: string
+                        example: test
+                      database:
+                        type: string
+                        enum:
+                        - connected
+                        - disconnected
+                        - error
+                        example: connected
+                      message_routing:
+                        type: string
+                        enum:
+                        - available
+                        - no_recipients_available
+                        - error
+                        example: available
+                    required:
+                    - status
+                    - timestamp
+                    - version
+                    - environment
+                    - database
+                    - message_routing
+  "/api/v1/inbox/messages":
+    get:
+      summary: List messages in user inbox
+      tags:
+      - Inbox
+      description: Retrieve all messages received by the current user
+      responses:
+        '200':
+          description: messages retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      "$ref": "#/components/schemas/Message"
+                required:
+                - data
+  "/api/v1/inbox/conversations":
+    get:
+      summary: List conversations in user inbox
+      tags:
+      - Inbox
+      description: Retrieve conversation threads where the user received messages
+      responses:
+        '200':
+          description: conversations retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      "$ref": "#/components/schemas/Conversation"
+                required:
+                - data
+  "/api/v1/inbox/unread":
+    get:
+      summary: List unread messages in user inbox
+      tags:
+      - Inbox
+      description: Retrieve all unread messages received by the current user
+      responses:
+        '200':
+          description: unread messages retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      "$ref": "#/components/schemas/Message"
+                required:
+                - data
+  "/api/v1/outbox/messages":
+    post:
+      summary: Send a new message
+      tags:
+      - Outbox
+      description: Send a new message to an available recipient
+      parameters: []
+      responses:
+        '201':
+          description: message sent successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    "$ref": "#/components/schemas/Message"
+                  message:
+                    type: string
+                    example: Message sent successfully
+                required:
+                - data
+                - message
+        '503':
+          description: no recipients available
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: No doctors are currently available
+                required:
+                - error
+        '422':
+          description: validation failed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Failed to send message
+                  details:
+                    type: array
+                    items:
+                      type: string
+                required:
+                - error
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                message:
+                  type: object
+                  properties:
+                    body:
+                      type: string
+                      example: Hello doctor, I need help with...
+                    parent_message_id:
+                      type: string
+                      format: uuid
+                      example: abc123-def456-ghi789
+                  required:
+                  - body
+              required:
+              - message
+servers:
+- url: http://localhost:3000
+  description: Development server
+- url: https://staging-api.healthcaremessaging.com
+  description: Staging server
+components:
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: 123e4567-e89b-12d3-a456-426614174000
+        first_name:
+          type: string
+          example: John
+        last_name:
+          type: string
+          example: Doe
+        role:
+          type: string
+          enum:
+          - patient
+          - doctor
+          - admin
+          example: patient
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+      required:
+      - id
+      - first_name
+      - last_name
+      - role
+    Message:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: 123e4567-e89b-12d3-a456-426614174000
+        body:
+          type: string
+          example: I need medical advice regarding chest pain.
+        status:
+          type: string
+          enum:
+          - sent
+          - delivered
+          - read
+          example: sent
+        routing_type:
+          type: string
+          enum:
+          - direct
+          - reply
+          - auto
+          example: direct
+        parent_message_id:
+          type: string
+          format: uuid
+          nullable: true
+        sender:
+          "$ref": "#/components/schemas/User"
+        recipient:
+          "$ref": "#/components/schemas/User"
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+      required:
+      - id
+      - body
+      - status
+      - routing_type
+      - sender
+      - recipient
+    Conversation:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: abc123-def456-ghi789
+        subject:
+          type: string
+          example: Thank you for reaching out. I can help you with...
+        participants:
+          type: array
+          items:
+            "$ref": "#/components/schemas/User"
+        last_message:
+          "$ref": "#/components/schemas/Message"
+        message_count:
+          type: integer
+          example: 3
+        created_at:
+          type: string
+          format: date-time
+          example: '2023-01-01T10:00:00Z'
+      required:
+      - id
+      - subject
+      - participants
+      - last_message
+      - message_count
+      - created_at
+    MessageInput:
+      type: object
+      properties:
+        body:
+          type: string
+          example: I need medical advice regarding chest pain.
+        parent_message_id:
+          type: string
+          format: uuid
+          nullable: true
+      required:
+      - body
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          example: Validation failed
+        details:
+          type: array
+          items:
+            type: string
+          example:
+          - Body cannot be blank
+          - Body is too long (maximum is 500 characters)
+      required:
+      - error
+  securitySchemes:
+    Bearer:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

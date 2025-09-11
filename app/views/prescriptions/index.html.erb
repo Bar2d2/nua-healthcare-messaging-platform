@@ -1,0 +1,27 @@
+<div class="prescriptions-container">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h4><%= t('prescriptions.index.title') %></h4>
+    <div class="d-flex gap-2">
+      <%= link_to inbox_path, class: "btn btn-outline-primary" do %>
+        <%= t('prescriptions.buttons.back_to_messages') %>
+      <% end %>
+      <button type="button"
+              class="btn btn-primary"
+              data-bs-toggle="modal"
+              data-bs-target="#lostPrescriptionModal">
+        <%= t('prescriptions.buttons.request_prescription_short') %>
+      </button>
+    </div>
+  </div>
+
+  <!-- Prescriptions List -->
+  <div id="prescriptions-list">
+    <%= render 'prescriptions/partials/list_content', prescriptions: @prescriptions, pagy: @pagy, current_user: current_user %>
+  </div>
+</div>
+
+<!-- Retry Confirmation Modal -->
+<%= render 'prescriptions/partials/retry_confirmation_modal' %>
+
+<!-- Real-time updates -->
+<%= turbo_stream_from "user_#{current_user.id}_prescriptions" %>

@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title><%= t('application.title') %></title>
+    <meta name="turbo-prefetch" content="false">
+    <%= csrf_meta_tags %>
+
+    <%= stylesheet_link_tag 'application', media: 'all', 'data-turbolinks-track': 'reload' %>
+    <%= javascript_importmap_tags "application", shim: false %>
+  </head>
+
+  <body class="bg-light">
+    <div class="container">
+      <%= render 'navigation/header' %>
+
+      <!-- Flash container for Turbo Stream updates -->
+      <div id="flash"></div>
+      <!-- Page refresh info banner for patients (show once per session) -->
+      <%= render 'shared/info_banner' %>
+
+      <!-- Lost Prescription Modal (Patient Only) -->
+      <% if current_user&.is_patient? %>
+        <%= render 'prescriptions/partials/lost_prescription_modal' %>
+      <% end %>
+
+      <main role="main">
+        <%= yield %>
+      </main>
+    </div>
+
+    <!-- Flash message toasts -->
+    <div id="global-notifications" class="position-fixed top-0 end-0 p-3" style="z-index: 1070;">
+      <%= render 'shared/flash_toast' %>
+    </div>
+  </body>
+</html>

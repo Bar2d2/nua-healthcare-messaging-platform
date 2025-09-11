@@ -1,0 +1,20 @@
+<%= turbo_stream.update "global-notifications" do %>
+  <div class="toast"
+       role="alert"
+       aria-live="assertive"
+       aria-atomic="true"
+       data-controller="toast"
+       data-toast-auto-dismiss-value="true"
+       data-toast-delay-value="3000">
+    <div class="toast-header bg-info text-white">
+      <strong class="me-auto">Prescription Request</strong>
+      <small><%= Time.current.strftime("%I:%M %p") %></small>
+      <button type="button" class="btn-close btn-close-white" data-action="click->toast#close" aria-label="Close"></button>
+    </div>
+    <div class="toast-body">
+      <%= t('prescriptions.notices.created') %>
+    </div>
+  </div>
+<% end %>
+
+

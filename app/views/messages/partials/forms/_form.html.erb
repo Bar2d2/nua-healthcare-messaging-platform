@@ -1,0 +1,48 @@
+<% if message.errors.any? %>
+  <div class="alert alert-danger fade show" role="alert" id="form-errors">
+    <ul class="mb-0">
+      <% message.errors.full_messages.each do |error| %>
+        <li><%= error %></li>
+      <% end %>
+    </ul>
+  </div>
+<% end %>
+
+<%= form_with model: message, local: true do |f| %>
+ <%= f.hidden_field :parent_message_id, value: (message.parent_message_id || params[:parent_message_id]) if message.parent_message_id.present? || params[:parent_message_id].present? %>
+
+  <% if message.parent_message.present? %>
+    <div class="mb-3">
+      <small class="text-muted">
+        <%= t('.replying_to') %>: <%= message.parent_message.body.truncate(100) %>
+      </small>
+    </div>
+  <% else %>
+    <div class="mb-3">
+      <small class="text-muted">
+        <strong><%= t('.recipient') %>:</strong>
+        <% if @recipient %>
+          <% if @recipient.is_doctor? %>Dr.<% end %>
+          <%= @recipient.full_name %>
+        <% else %>
+          <%= t('.will_be_assigned') %>
+        <% end %>
+      </small>
+    </div>
+  <% end %>
+
+  <div class="mb-3">
+    <%= f.label :body, t('.message_body'), class: 'form-label' %>
+    <%= f.text_area :body, class: "form-control #{'is-invalid' if message.errors[:body].any?}", rows: 3, placeholder: t('.message_placeholder') %>
+    <% if message.errors[:body].any? %>
+      <div class="invalid-feedback">
+        <%= message.errors[:body].join(', ') %>
+      </div>
+    <% end %>
+  </div>
+
+  <div class="d-flex">
+    <%= f.submit t('.send_message'), class: 'btn btn-primary me-auto' %>
+    <%= link_to t('common.back'), :back, class: 'btn btn-link' %>
+  </div>
+<% end %>

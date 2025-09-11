@@ -1,0 +1,14 @@
+<% if inbox.unread_messages? %>
+  <%= link_to mark_all_read_messages_path,
+              method: :post,
+              class: "btn btn-outline-secondary btn-sm",
+              data: {
+                turbo_method: :post,
+                turbo_submits_with: "Processing..."
+              } do %>
+    <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+    <%= t('messages.inbox.mark_all_read') %>
+  <% end %>
+<% else %>
+  <!-- No unread messages, no button needed -->
+<% end %>

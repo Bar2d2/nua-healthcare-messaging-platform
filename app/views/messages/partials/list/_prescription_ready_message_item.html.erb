@@ -1,0 +1,22 @@
+<div class="list-group-item list-group-item-action d-flex gap-3 py-3", id="<%= dom_id(message) %>">
+  <!-- Stretched link for entire card -->
+  <div class="d-flex gap-2 w-100 justify-content-between">
+    <div>
+      <h6 class="mb-0 d-flex align-items-center">
+        New Prescription
+      <span class="badge bg-success ms-2">Ready</span>
+      </h6>
+      <p class="mb-0 opacity-75"><%= simple_format(message.body, {}, { sanitize: true }) %></p>
+    </div>
+    <div class="text-end">
+      <small class="opacity-50 text-nowrap d-block">
+        <%= time_ago_in_words(message.created_at) %> ago
+      </small>
+      <% unless message.read_already? %>
+        <span class="badge bg-primary">New</span>
+      <% end %>
+    </div>
+  </div>
+  <%= link_to message_path(message), class: "stretched-link", "aria-label": "View message" do %>
+  <% end %>
+</div>

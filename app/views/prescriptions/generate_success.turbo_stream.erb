@@ -1,0 +1,33 @@
+<%= turbo_stream.update "global-notifications" do %>
+  <div class="toast"
+       role="alert"
+       aria-live="assertive"
+       aria-atomic="true"
+       data-controller="toast"
+       data-toast-auto-dismiss-value="true"
+       data-toast-delay-value="3000">
+    <div class="toast-header bg-success text-white">
+      <strong class="me-auto">Success</strong>
+      <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast" aria-label="Close"></button>
+    </div>
+    <div class="toast-body">
+      <%= t('prescriptions.notices.generation_started') %>
+    </div>
+  </div>
+<% end %>
+
+<!-- 1. FIRST: Update button (most important visual feedback) -->
+<%= turbo_stream.update "prescription-action-button-#{prescription.id}" do %>
+  <button type="button"
+          class="btn btn-secondary"
+          disabled
+          title="Prescription generation in progress"
+          data-turbo-permanent="true">
+    <%= t('prescriptions.admin.already_generated') %>
+  </button>
+<% end %>
+
+<!-- 2. SECOND: Update badge to match (maintain consistency) -->
+<%= turbo_stream.update "prescription-badge-#{prescription.id}" do %>
+  <%= render 'messages/partials/conversation/prescription_badge', prescription: prescription %>
+<% end %>

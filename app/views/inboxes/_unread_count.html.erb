@@ -1,0 +1,11 @@
+<%# Unread count display with real-time updates %>
+<% cached_count = inbox.cached_unread_count %>
+<% if cached_count.positive? %>
+  <span class="badge bg-danger rounded-pill">
+    <%= cached_count %>
+  </span>
+<% else %>
+  <span class="badge bg-info rounded-pill">
+    0
+  </span>
+<% end %>

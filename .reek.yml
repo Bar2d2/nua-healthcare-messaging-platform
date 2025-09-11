@@ -1,0 +1,267 @@
+# Clean Reek configuration - all legitimate patterns excluded
+---
+exclude_paths:
+  - vendor
+  - db/migrate
+  - app/channels/application_cable
+  - spec/
+  - features/
+  - test/
+  - app/services/performance/**/*
+  - config/initializers/redis.rb
+
+detectors:
+  # Standard Rails patterns that don't need documentation
+  IrresponsibleModule:
+    exclude:
+      - Api::V1
+      - ApplicationController
+      - ApplicationHelper
+      - ApplicationJob
+      - ApplicationCable::Channel
+      - ApplicationCable::Connection
+      - NuaMessaging::Application
+      - ApplicationMailer
+      - ApplicationRecord
+      - Caching::UnreadCountService
+      - Caching::WarmingService
+
+  # Utility functions are acceptable in helpers and service utilities
+  UtilityFunction:
+    exclude:
+      - ApplicationHelper
+      - Api::V1::HealthController
+      - Api::ExceptionHandler
+      - Shared::UserPresentation
+      - Messages::NavigationDecorator
+      - Messages::Participants::DataService
+      - PaginationUpdateJob
+      - Messages::Conversations::DataService
+      - BroadcastPrescriptionUpdateJob
+      - PrescriptionGenerationJob
+      - PrescriptionPaymentJob
+
+  # Feature envy acceptable when working with external objects
+  FeatureEnvy:
+    exclude:
+      - Api::V1::MessagesController
+      - Messages::DataDecorator
+      - Api::ExceptionHandler
+      - MessageCreationJob
+      - BroadcastMessageJob
+      - BroadcastUpdateJob
+      - Messages::Operations::RoutingService
+      - PrescriptionPaymentJob
+
+  # Duplicate method calls acceptable for logging and Rails patterns
+  DuplicateMethodCall:
+    exclude:
+      - ApplicationHelper
+      - BroadcastMessageJob
+      - BroadcastPrescriptionAddedJob
+      - BroadcastPrescriptionUpdateJob
+      - BroadcastUpdateJob
+      - CacheWarmingJob
+      - MarkAllReadJob
+      - MessageCreationJob
+      - PaginationUpdateJob
+      - Broadcasting::InboxUpdatesService
+      - Broadcasting::PaginationUpdatesService
+      - Broadcasting::PrescriptionUpdatesService
+      - Caching::ConversationCacheService
+      - Caching::MessageListCacheService
+      - Caching::UnreadCountService
+      - Caching::WarmingService
+      - Messages::Caching::InvalidationService
+      - Messages::Conversations::DataService
+      - Messages::Operations::ActionsService
+      - Messages::Operations::SendService
+      - Messages::Presentation::ResponseService
+      - Payments::FlakyPaymentProvider
+      - Prescriptions::RequestService
+      - Api::V1::OutboxesController
+      - Messages::ViewDecorator
+      - PrescriptionGenerationJob
+      - PrescriptionsController
+      - Messages::NavigationDecorator
+      - PrescriptionPaymentJob
+      - Api::ExceptionHandler
+
+  # Too many statements acceptable for complex business logic
+  TooManyStatements:
+    exclude:
+      - BroadcastMessageJob
+      - BroadcastPrescriptionAddedJob
+      - BroadcastPrescriptionUpdateJob
+      - BroadcastUpdateJob
+      - CacheWarmingJob
+      - MarkAllReadJob
+      - MessageCreationJob
+      - UnreadCountUpdateJob
+      - Broadcasting::PaginationUpdatesService
+      - Broadcasting::PrescriptionUpdatesService
+      - Caching::ConversationCacheService
+      - Caching::MessageListCacheService
+      - Caching::UnreadCountService
+      - Caching::WarmingService
+      - Messages::Caching::InvalidationService
+      - Messages::Conversations::DataService
+      - Messages::Operations::ActionsService
+      - Messages::Operations::RoutingService
+      - Messages::Operations::SendService
+      - Messages::Presentation::ResponseService
+      - Payments::FlakyPaymentProvider
+      - Prescriptions::RequestService
+      - Api::V1::OutboxesController
+      - Messages::ViewDecorator
+      - PrescriptionGenerationJob
+      - PrescriptionsController
+      - PaginationUpdateJob
+      - PrescriptionPaymentJob
+
+  # Exception variables 'e' are standard
+  UncommunicativeVariableName:
+    exclude:
+      - BroadcastMessageJob
+      - BroadcastPrescriptionAddedJob
+      - BroadcastPrescriptionUpdateJob
+      - BroadcastUpdateJob
+      - PaginationUpdateJob
+      - Prescriptions::RequestService
+      - CacheWarmingJob
+      - MarkAllReadJob
+      - MessageCreationJob
+      - PrescriptionPaymentJob
+      - UnreadCountUpdateJob
+      - Api::ErrorRegistry
+      - Caching::ConversationCacheService
+      - Caching::MessageListCacheService
+      - Caching::UnreadCountService
+      - Caching::WarmingService
+      - Messages::Operations::UpdateService
+      - Messages::Caching::InvalidationService
+      - Messages::Operations::SendService
+
+  # Class variables acceptable for simulation counters
+  ClassVariable:
+    exclude:
+      - Payments::FlakyPaymentProvider
+
+  # Boolean parameters for coordination and Ruby standard methods
+  BooleanParameter:
+    exclude:
+      - BroadcastPrescriptionUpdateJob
+      - Broadcasting::PrescriptionUpdatesService
+      - PrescriptionPaymentJob
+      - MessageQuery
+      - Messages::Conversations::OrchestratorService
+
+  # Control parameters for orchestration
+  ControlParameter:
+    exclude:
+      - BroadcastPrescriptionUpdateJob
+      - UnreadCountUpdateJob
+      - Messages::Conversations::OrchestratorService
+
+  # Repeated conditionals for cache checks and business logic
+  RepeatedConditional:
+    exclude:
+      - Caching::UnreadCountService
+      - Caching::WarmingService
+      - Messages::Operations::RoutingService
+      - Broadcasting::PrescriptionUpdatesService
+
+  # Too many instance variables acceptable for caching services
+  TooManyInstanceVariables:
+    exclude:
+      - Messages::Operations::RoutingService
+
+  # Missing safe methods acceptable for Rails patterns
+  MissingSafeMethod:
+    exclude:
+      - Inbox
+      - Api::AuthenticationService
+      - Inboxes::Operations::ActionsService
+      - Messages::Conversations::OrchestratorService
+      - Messages::Operations::ActionsService
+      - MessageRoutingType
+      - Payment
+      - Prescription
+
+  # Manual dispatch for case statements and method_missing
+  ManualDispatch:
+    exclude:
+      - Messages::Operations::ActionsService
+      - Messages::ViewDecorator
+      - MessageQuery
+      - Api::ExceptionHandler
+      - Caching::UnreadCountService
+      - Caching::WarmingService
+      - Messages::Conversations::OrchestratorService
+      - Messages::Presentation::ResponseService
+
+  # Nested iterators for complex operations
+  NestedIterators:
+    exclude:
+      - Messages::Operations::ActionsService
+
+  # Attributes for parameter objects
+  Attribute:
+    exclude:
+      - MessageParams
+      - MessageUpdateParams
+      - Api::AuthenticationService
+
+  # Instance variable assumptions for Rails controllers and services
+  InstanceVariableAssumption:
+    exclude:
+      - MessagesController
+      - PrescriptionsController
+      - Api::AuthenticationService
+      - Messages::Operations::RoutingService
+
+  # API versioning naming
+  UncommunicativeModuleName:
+    exclude:
+      - Api::V1
+
+  # Common parameters for services
+  DataClump:
+    exclude:
+      - Messages::NavigationDecorator
+      - Api::BaseControllerSupport
+      - Api::ResponseService
+      - Broadcasting::TurboStreamsService
+      - Caching::ConversationCacheService
+      - Caching::MessageListCacheService
+      - Messages::Presentation::ResponseService
+
+  # Long parameter lists for complex services
+  LongParameterList:
+    exclude:
+      - Api::BaseControllerSupport
+      - Api::ResponseService
+      - Broadcasting::TurboStreamsService
+      - Caching::ConversationCacheService
+      - Caching::MessageListCacheService
+      - Messages::Queries::DataService
+
+  # Unused parameters for interface consistency
+  UnusedParameters:
+    exclude:
+      - MessageCreationJob
+
+  # Nil checks for defensive programming
+  NilCheck:
+    exclude:
+      - Caching::UnreadCountService
+      - Messages::Conversations::DataService
+      - Messages::Conversations::OrchestratorService
+      - Messages::Operations::RoutingService
+
+  # Too many methods for comprehensive models and services
+  TooManyMethods:
+    exclude:
+      - Message
+      - Messages::Conversations::DataService
+      - Messages::Operations::RoutingService

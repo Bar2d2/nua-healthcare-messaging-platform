@@ -1,0 +1,98 @@
+---
+en:
+  application:
+    title: Nua Messaging
+  common:
+    ago: ago
+    back: Back
+    note: Note
+    you: "(You)"
+  messages:
+    inbox:
+      empty: No received messages yet.
+      title: Inbox
+      mark_all_read: Mark All as Read
+      no_messages: No messages to display yet.
+      start_conversation: Start Conversation
+    index:
+      new_message: New Message
+      title: Messages
+    new:
+      start_conversation: Start Conversation
+      title: New Message
+    notice:
+      created: Message was successfully created
+      sending: Message is being sent...
+      updated: Message was successfully updated
+      all_marked_read: All messages marked as read
+    outbox:
+      empty: No sent messages yet.
+      title: Outbox
+    show:
+      conversation_started: Conversation started
+      reply: Reply
+    partials:
+      forms:
+        form:
+          message_body: Message
+          message_placeholder: Type your message here...
+          recipient: Recipient
+          replying_to: Replying to
+          send_message: Send Message
+          will_be_assigned: Will be assigned automatically
+      list:
+        messages_list:
+          no_messages: No messages to display yet.
+        received_message_item:
+          new: New message
+          received_message: Message received
+        sent_message_item:
+          sent: Sent
+          sent_message: Message sent
+  navigation:
+    inbox: Inbox
+    outbox: Outbox
+  prescriptions:
+    buttons:
+      back_to_messages: Back to Messages
+      cancel: Cancel
+      generate_and_send: Generate & Send
+      prescriptions: Prescriptions
+      request_new: Request New Prescription
+      request_prescription: Pay €10 & Request Prescription
+      request_prescription_short: Request Prescription
+      retry_payment_amount: "Retry Payment €10"
+    index:
+      empty_message: Request a new prescription if you've lost yours
+      no_prescriptions: No prescriptions found
+      title: My Prescriptions
+    lost_prescription:
+      alert_title: Lost your prescription?
+      alert_subtitle: Request a new prescription for €10
+      fee_warning: "Prescription Replacement Fee: €10"
+      modal_title: Request New Prescription
+      description: A new prescription will be generated and sent to you by an admin. The €10 fee will be charged to process your request.
+      what_happens_next: "What happens next:"
+      step_1: Payment will be processed (€10)
+      step_2: Admin will be notified of your request
+      step_3: New prescription will be generated
+      step_4: You'll receive a message with download link
+      note: "If payment fails, you can retry up to 5 times with automatic delays between attempts."
+    notices:
+      created: Payment is being processed. You'll be notified when complete.
+      generation_started: Prescription is being generated...
+      payment_retry: Payment retry initiated. Processing...
+      payment_success: Payment successful! Admin has been notified.
+      payment_failed: Payment failed. You can retry the payment.
+    retry_payment:
+      modal_title: Retry Payment
+      description: Your previous payment attempt failed. You can retry the payment for your prescription request.
+      amount: "Amount: €10"
+    admin:
+      request_badge: Prescription Request
+      no_prescription_found: No prescription found
+      already_generated: Already Generated
+      payment_failed: Payment Failed
+      pending_action: Pending Action
+  user_switching:
+    returned_to_default: Returned to default user

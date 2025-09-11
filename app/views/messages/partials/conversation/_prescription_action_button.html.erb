@@ -1,0 +1,29 @@
+<% prescription_message = prescription.messages.first %>
+<% case prescription.status %>
+<% when 'requested' %>
+  <%= button_to generate_prescription_path(prescription),
+      method: :post,
+      params: { message_id: prescription_message&.id },
+      class: "btn btn-success",
+      title: "Generate and Send Prescription",
+      data: {
+        turbo_submits_with: "Processing...",
+        turbo: true
+      } do %>
+    <span class="btn-text"><%= t('prescriptions.buttons.generate_and_send') %></span>
+  <% end %>
+<% when 'ready' %>
+  <button type="button"
+          class="btn btn-secondary"
+          disabled
+          title="Prescription already generated">
+    <%= t('prescriptions.admin.already_generated') %>
+  </button>
+<% when 'payment_rejected' %>
+  <button type="button"
+          class="btn btn-outline-danger"
+          disabled
+          title="Payment was rejected">
+    <%= t('prescriptions.admin.payment_failed') %>
+  </button>
+<% end %>

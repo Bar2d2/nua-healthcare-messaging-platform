@@ -1,0 +1,37 @@
+<% if notice %>
+  <div class="toast"
+       role="alert"
+       aria-live="assertive"
+       aria-atomic="true"
+       data-controller="toast"
+       data-toast-auto-dismiss-value="true"
+       data-toast-delay-value="3000">
+    <div class="toast-header bg-success text-white">
+      <strong class="me-auto">Success</strong>
+      <small><%= Time.current.strftime("%I:%M %p") %></small>
+      <button type="button" class="btn-close btn-close-white" data-action="click->toast#close" aria-label="Close"></button>
+    </div>
+    <div class="toast-body">
+      <%= notice %>
+    </div>
+  </div>
+<% end %>
+
+<% if alert %>
+  <div class="toast"
+       role="alert"
+       aria-live="assertive"
+       aria-atomic="true"
+       data-controller="toast"
+       data-toast-auto-dismiss-value="true"
+       data-toast-delay-value="3000">
+    <div class="toast-header bg-danger text-white">
+      <strong class="me-auto">Error</strong>
+      <small><%= Time.current.strftime("%I:%M %p") %></small>
+      <button type="button" class="btn-close btn-close-white" data-action="click->toast#close" aria-label="Close"></button>
+    </div>
+    <div class="toast-body">
+      <%= alert %>
+    </div>
+  </div>
+<% end %>

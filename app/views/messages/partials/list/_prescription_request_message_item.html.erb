@@ -1,0 +1,48 @@
+<div class="list-group-item py-3 position-relative" id="<%= dom_id(message) %>">
+  <!-- Stretched link for entire card -->
+  <%= link_to message_path(message), class: "stretched-link", "aria-label": "View message" do %>
+  <% end %>
+
+  <div class="d-flex gap-2 w-100 justify-content-between">
+    <div class="flex-grow-1">
+      <h6 class="mb-0 d-flex align-items-center">
+        <% if message.parent_message_id.present? %>
+          <small class="text-muted me-1">↳</small>
+        <% end %>
+        <%= message.outbox.user.full_name %>
+        <span class="badge bg-info ms-2"><%= t('prescriptions.admin.request_badge') %></span>
+      </h6>
+      <div class="mb-2 opacity-75"><%= simple_format(message.body, {}, { sanitize: true }) %></div>
+      <small class="text-muted">
+        <%= t('messages.partials.list.received_message_item.received_message') %> •
+        <%= time_ago_in_words(message.created_at) %> ago
+      </small>
+    </div>
+    <div class="text-end d-flex flex-column align-items-end gap-2">
+      <% unless message.read_already? %>
+      <small class="text-muted">
+        <span class="badge bg-primary"><%= t('messages.partials.list.received_message_item.new') %></span>
+      </small>
+      <% end %>
+
+      <!-- Status Badge Only -->
+      <small class="text-muted">
+      <% if current_user.is_admin? && prescription_request_message?(message) %>
+        <% prescription = find_prescription_from_message(message) %>
+        <% if prescription %>
+          <% case prescription.status %>
+          <% when 'requested' %>
+            <span class="badge bg-warning"><%= t('prescriptions.admin.pending_action') %></span>
+          <% when 'ready' %>
+            <span class="badge bg-success"><%= t('prescriptions.admin.already_generated') %></span>
+          <% when 'payment_rejected' %>
+            <span class="badge bg-danger"><%= t('prescriptions.admin.payment_failed') %></span>
+          <% end %>
+        <% else %>
+          <span class="badge bg-secondary"><%= t('prescriptions.admin.no_prescription_found') %></span>
+        <% end %>
+      <% end %>
+      </small>
+    </div>
+  </div>
+</div>

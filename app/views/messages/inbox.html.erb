@@ -1,0 +1,49 @@
+<div class="inbox-container" data-controller="messages">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex align-items-center gap-3">
+      <h4><%= t('messages.inbox.title') %></h4>
+      <div id="mark_all_read_button">
+        <%= render partial: 'messages/partials/mark_all_read_button', locals: { inbox: current_user.inbox } %>
+      </div>
+    </div>
+    <div class="d-flex gap-2">
+      <% if current_user.is_patient? %>
+        <%= link_to prescriptions_path, class: "btn btn-outline-primary" do %>
+           <%= t('prescriptions.buttons.prescriptions') %>
+        <% end %>
+      <% end %>
+      <a class="btn btn-primary" href="<%= new_message_path %>"><%= t('messages.new.title') %></a>
+    </div>
+  </div>
+
+
+
+  <div class="inbox-list" data-messages-target="list">
+    <% if @messages.any? %>
+      <div class="list-group w-auto" id="inbox-list">
+        <% @messages.each do |message| %>
+          <%= render 'messages/partials/list/received_message_item', message: message %>
+        <% end %>
+      </div>
+
+      <!-- High-performance pagination with Bootstrap styling -->
+      <div id="inbox-pagination-nav">
+        <%= render 'shared/pagination_nav', pagy: @pagy %>
+      </div>
+
+      <!-- Pagination info -->
+      <div id="inbox-pagination-info">
+        <%= render 'shared/pagination_info', pagy: @pagy %>
+      </div>
+    <% else %>
+      <div class="text-center py-5">
+        <p class="text-muted"><%= t('messages.inbox.empty') %></p>
+        <a href="<%= new_message_path %>" class="btn btn-primary"><%= t('messages.new.start_conversation') %></a>
+      </div>
+    <% end %>
+  </div>
+</div>
+
+<!-- Turbo Stream targets for real-time updates -->
+<%= turbo_stream_from "messages" %>
+<%= turbo_stream_from "user_#{current_user.id}_inbox" %>

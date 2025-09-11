@@ -1,0 +1,29 @@
+<% if prescriptions.any? %>
+  <div class="list-group" id="prescriptions-items">
+    <% prescriptions.each do |prescription| %>
+      <%= render 'prescriptions/partials/prescription_item', prescription: prescription %>
+    <% end %>
+  </div>
+
+  <!-- Pagination -->
+  <div id="prescriptions-pagination-nav">
+    <%= render 'shared/pagination_nav', pagy: pagy %>
+  </div>
+
+  <!-- Pagination info -->
+  <div id="prescriptions-pagination-info">
+    <%= render 'shared/pagination_info', pagy: pagy %>
+  </div>
+<% else %>
+  <div class="text-center py-5">
+
+    <h5 class="text-muted mt-3"><%= t('prescriptions.index.no_prescriptions') %></h5>
+    <p class="text-muted"><%= t('prescriptions.index.empty_message') %></p>
+    <button type="button"
+            class="btn btn-primary"
+            data-bs-toggle="modal"
+            data-bs-target="#lostPrescriptionModal">
+       <%= t('prescriptions.buttons.request_new') %>
+    </button>
+  </div>
+<% end %>

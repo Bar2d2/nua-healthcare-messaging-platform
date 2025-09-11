@@ -1,0 +1,33 @@
+<!-- Page refresh notification for patients (show once per session) -->
+<% if current_user&.is_patient? %>
+  <div class="alert alert-info alert-dismissible fade show"
+       role="alert"
+       style="display: none;"
+       data-controller="info-banner"
+       data-info-banner-storage-key-value="prescription_info_dismissed"
+       data-info-banner-auto-show-value="true"
+       data-turbo-permanent>
+    <div class="d-flex align-items-center">
+      <div class="flex-grow-1">
+        <strong><%= t('prescriptions.lost_prescription.alert_title') %></strong>
+        <small class="d-block"><%= t('prescriptions.lost_prescription.alert_subtitle') %></small>
+      </div>
+      <div class="ms-3">
+        <%= link_to prescriptions_path, class: "btn btn-primary btn-sm me-2" do %>
+          View List
+        <% end %>
+        <button type="button"
+                class="btn btn-outline-primary btn-sm"
+                data-bs-toggle="modal"
+                data-bs-target="#lostPrescriptionModal">
+          Request Now
+        </button>
+      </div>
+    </div>
+    <button type="button"
+            class="btn-close"
+            data-bs-dismiss="alert"
+            data-action="click->info-banner#dismiss"
+            aria-label="Close"></button>
+  </div>
+<% end %>

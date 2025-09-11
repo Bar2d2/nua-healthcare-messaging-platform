@@ -1,0 +1,24 @@
+<%= link_to message_path(message), class: "list-group-item list-group-item-action d-flex gap-3 py-3", id: dom_id(message) do %>
+  <div class="d-flex gap-2 wd">
+    <div>
+      <h6 class="mb-0 d-flex align-items-center">
+        <% if message.parent_message_id.present? %>
+          <small class="text-muted me-1">↳</small>
+        <% end %>
+        <% if message.inbox.user.is_doctor? %>Dr.<% end %>
+        <%= message.inbox.user.full_name %>
+        <% if prescription_request_message?(message) %>
+          <span class="badge bg-info ms-2"><%= t('prescriptions.admin.request_badge') %></span>
+        <% end %>
+      </h6>
+      <p class="mb-0 opacity-75"><%= message.body.truncate(100) %></p>
+      <small class="text-muted"><%= t('.sent_message') %></small>
+    </div>
+    <div class="text-end">
+      <small class="opacity-50 text-nowrap d-block">
+        <%= time_ago_in_words(message.created_at) %> ago
+      </small>
+      <span class="badge bg-secondary"><%= t('.sent') %></span>
+    </div>
+  </div>
+<% end %>

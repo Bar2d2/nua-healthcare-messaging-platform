@@ -1,0 +1,11 @@
+<div class="list-group w-auto">
+  <% if messages&.any? %>
+    <% messages.each do |message| %>
+      <%= render partial: 'messages/partials/list/message_item', locals: { message: message } %>
+    <% end %>
+  <% else %>
+    <div class="list-group-item">
+      <em><%= t('.no_messages', default: 'No messages to display yet.') %></em>
+    </div>
+  <% end %>
+</div>

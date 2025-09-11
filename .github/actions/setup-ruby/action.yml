@@ -1,0 +1,55 @@
+name: 'Setup Ruby Environment'
+description: 'Setup Ruby, install dependencies, and prepare Rails environment'
+
+inputs:
+  ruby-version:
+    description: 'Ruby version to use'
+    required: false
+    default: '3.2.4'
+  setup-database:
+    description: 'Whether to setup database (create and load schema)'
+    required: false
+    default: 'false'
+  create-storage-dirs:
+    description: 'Whether to create storage directories'
+    required: false
+    default: 'false'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Set up Ruby
+      uses: ruby/setup-ruby@v1
+      with:
+        ruby-version: ${{ inputs.ruby-version }}
+        bundler-cache: false
+
+    - name: Install dependencies
+      shell: bash
+      run: |
+        bundle lock --add-platform x86_64-linux
+        bundle install
+
+    - name: Setup database
+      if: inputs.setup-database == 'true'
+      shell: bash
+      env:
+        DB_USERNAME: postgres
+        DB_PASSWORD: postgres
+        DB_HOST: 127.0.0.1
+        DB_PORT: 5432
+      run: |
+        bundle exec rails db:create
+        bundle exec rails db:schema:load
+        bundle exec rails db:seed
+
+    - name: Create storage directories
+      if: inputs.create-storage-dirs == 'true'
+      shell: bash
+      run: mkdir -p tmp/storage
+
+    - name: Precompile assets
+      if: inputs.setup-database == 'true'
+      shell: bash
+      run: |
+        bundle exec rails assets:precompile RAILS_ENV=test

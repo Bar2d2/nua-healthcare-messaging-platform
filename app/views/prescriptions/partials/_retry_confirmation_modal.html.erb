@@ -1,0 +1,45 @@
+<!-- Simple Retry Payment Confirmation Modal -->
+<div class="modal fade"
+     id="retryConfirmationModal"
+     tabindex="-1"
+     aria-labelledby="retryConfirmationModalLabel"
+     aria-hidden="true"
+     data-controller="modal"
+     data-modal-retry-url-value="">
+  <div class="modal-dialog modal-sm">
+    <div class="modal-content">
+      <div class="modal-header border-0 pb-0">
+        <h5 class="modal-title text-warning" id="retryConfirmationModalLabel">
+          <%= t('prescriptions.retry_payment.modal_title') %>
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+
+      <div class="modal-body">
+        <p class="mb-3">
+          <%= t('prescriptions.retry_payment.description') %>
+        </p>
+
+        <div class="alert alert-info">
+          <strong><%= t('prescriptions.retry_payment.amount') %></strong><br>
+          <small>Manual retries always succeed</small>
+        </div>
+      </div>
+
+      <div class="modal-footer border-0 pt-0">
+        <%= form_with url: "#",
+                      method: :post,
+                      local: false,
+                      data: { modal_target: "form", turbo: true },
+                      class: "d-flex gap-2 w-100" do |form| %>
+          <button type="button" class="btn btn-outline-secondary flex-fill" data-bs-dismiss="modal">
+            <%= t('prescriptions.buttons.cancel') %>
+          </button>
+          <%= form.submit t('prescriptions.buttons.retry_payment_amount'),
+                          class: "btn btn-warning flex-fill",
+                          data: { disable_with: "Processing Payment..." } %>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>

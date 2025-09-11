@@ -1,0 +1,107 @@
+plugins:
+  - rubocop-rails
+
+AllCops:
+  SuggestExtensions: false
+  NewCops: enable
+  TargetRubyVersion: 3.2
+  Exclude:
+    - 'db/**/*'
+    - 'config/**/*'
+    - 'script/**/*'
+    - 'bin/**/*'
+    - 'vendor/**/*'
+    - 'node_modules/**/*'
+    - 'app/services/performance/**/*'  # Performance testing services
+    - 'lib/tasks/performance_check.rake'  # Performance check rake task
+
+Style/Documentation:
+  Enabled: false
+
+Style/StringLiterals:
+  EnforcedStyle: single_quotes
+
+Layout/LineLength:
+  Max: 120
+  Exclude:
+    - 'app/jobs/prescription_generation_job.rb'  # Long prescription message with HTML formatting
+    - 'app/models/message.rb'  # Long schema comment with index information
+    - 'app/serializers/message_serializer.rb'  # Long schema comment with index information
+    - 'spec/factories/messages.rb'  # Long factory definition with detailed attributes
+
+Metrics/MethodLength:
+  Max: 20
+  Exclude:
+    - 'app/controllers/messages_controller.rb'
+    - 'app/services/caching/warming_service.rb'
+    - 'app/jobs/mark_all_read_job.rb'  # Background job with comprehensive bulk operations
+    - 'app/services/broadcasting/pagination_updates_service.rb'  # Complex pagination logic
+    - 'app/services/broadcasting/prescription_updates_service.rb'  # Complex broadcasting logic
+    - 'app/services/messages/operations/actions_service.rb'  # Complex message operations
+
+Metrics/AbcSize:
+  Max: 30
+  Exclude:
+    - 'app/services/caching/warming_service.rb'
+    - 'app/services/messages/operations/actions_service.rb'  # Complex message operations
+
+Metrics/BlockLength:
+  Exclude:
+    - 'spec/**/*'
+    - 'features/**/*'  # Cucumber step definitions with comprehensive test setup
+    - 'config/routes.rb'
+    - 'lib/tasks/auto_annotate_models.rake'
+    - 'lib/tasks/quality_gate.rake'
+    - 'lib/tasks/message_generation.rake'  # Task with comprehensive message generation logic
+
+Metrics/ClassLength:
+  Exclude:
+    - 'app/models/message.rb'  # Core domain model with conversation, routing, and broadcasting logic
+    - 'app/controllers/messages_controller.rb'  # Main controller with comprehensive message management
+    - 'app/services/caching/conversation_cache_service.rb'  # Cache service with comprehensive functionality
+    - 'app/services/caching/unread_count_service.rb'  # Complex caching logic with health checks
+    - 'app/decorators/message_decorator.rb'  # Decorator with comprehensive presentation logic for messages
+    - 'app/services/caching/message_list_cache_service.rb'  # Cache service with comprehensive functionality
+    - 'app/services/caching/warming_service.rb'  # Cache warming service with comprehensive functionality
+    - 'app/services/messages/operations/routing_service.rb'  # Complex routing service with caching and validation
+    - 'app/services/broadcasting/prescription_updates_service.rb'  # Complex broadcasting service with many methods
+
+# Allow predicate methods that return non-boolean values
+# (e.g., payment service debit method that returns true on success)
+Naming/PredicateMethod:
+  Exclude:
+    - 'app/services/payments/flaky_payment_provider.rb'
+
+# Allow update_all for bulk operations where validation skipping is intentional
+Rails/SkipsModelValidations:
+  Exclude:
+    - 'app/services/messages/operations/status_service.rb'
+    - 'app/services/messages/conversations/actions_service.rb'  # Bulk read status updates for performance
+    - 'app/controllers/messages_controller.rb'  # Bulk read status updates for performance
+    - 'app/models/inbox.rb'  # Unread count management with intentional validation skipping
+    - 'app/services/inboxes/operations/actions_service.rb'  # Unread count management with intentional validation skipping
+    - 'features/step_definitions/**/*'  # Test setup with intentional validation skipping
+    - 'spec/models/inbox_unread_count_spec.rb'  # Testing cache behavior without callbacks
+    - 'spec/services/caching/unread_count_service_spec.rb'  # Testing cache behavior without callbacks
+    - 'app/services/messages/operations/actions_service.rb' # Bulk read status updates for performance
+    - 'app/jobs/mark_all_read_job.rb'  # Bulk operations with intentional validation skipping for performance
+    - 'app/jobs/unread_count_update_job.rb'  # Unread count management with intentional validation skipping
+
+# Allow case statements for business logic where hash lookups would be less readable
+Style/HashLikeCase:
+  Exclude:
+    - 'app/models/prescription.rb'  # Business logic for prescription status badges and colors
+
+# Allow class variables in services that need global state
+Style/ClassVars:
+  Exclude:
+    - 'app/services/payments/flaky_payment_provider.rb'  # Global counter for simulation purposes
+
+# Allow high complexity in specific business logic methods
+Metrics/CyclomaticComplexity:
+  Exclude:
+    - 'app/services/messages/operations/actions_service.rb'  # Complex message operations
+
+Metrics/PerceivedComplexity:
+  Exclude:
+    - 'app/services/messages/operations/actions_service.rb'  # Complex message operations

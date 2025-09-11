@@ -1,0 +1,9 @@
+<div class="card mt-3">
+  <h5 class="card-header">
+    <%= t('.title') %>
+  </h5>
+
+  <div class="card-body" id="new_message_form">
+    <%= render partial: 'messages/partials/forms/form', locals: { message: @message } %>
+  </div>
+</div>

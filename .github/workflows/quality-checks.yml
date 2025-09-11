@@ -1,0 +1,248 @@
+name: Quality Checks
+
+on:
+  pull_request:
+    branches: [ main, develop ]
+    types: [opened, synchronize, reopened]
+  push:
+    branches: [ main, develop ]
+
+jobs:
+  rubocop:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Ruby Environment
+      uses: ./.github/actions/setup-ruby
+
+    - name: Run RuboCop Style Checks
+      run: |
+        echo "🎨 Running RuboCop style checks..."
+        bundle exec rake quality_gate:style
+
+  reek:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Ruby Environment
+      uses: ./.github/actions/setup-ruby
+
+    - name: Run Reek Code Smell Analysis
+      run: |
+        echo "👃 Running Reek code smell analysis..."
+        bundle exec rake quality_gate:code_smells
+
+  brakeman:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Ruby Environment
+      uses: ./.github/actions/setup-ruby
+
+    - name: Run Brakeman Security Checks
+      run: |
+        echo "🔒 Running Brakeman security checks..."
+        bundle exec rake quality_gate:security
+
+    - name: Upload Brakeman Report
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: brakeman-report
+        path: brakeman-report.json
+        retention-days: 30
+
+  translations:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Ruby Environment
+      uses: ./.github/actions/setup-ruby
+
+    - name: Run Translation Checks
+      run: |
+        echo "🌍 Running translation checks..."
+        bundle exec rake quality_gate:translations
+
+  test-coverage:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_USER: postgres
+          POSTGRES_DB: nua_messaging_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      redis:
+        image: redis
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Ruby Environment
+      uses: ./.github/actions/setup-ruby
+      with:
+        setup-database: 'true'
+
+    - name: Run Test Coverage
+      env:
+        DB_USERNAME: postgres
+        DB_PASSWORD: postgres
+        DB_HOST: 127.0.0.1
+        DB_PORT: 5432
+      run: |
+        COVERAGE=true bundle exec rspec --format progress
+        if [ -f coverage/index.html ]; then
+          echo "✅ Test coverage report generated"
+        else
+          echo "ℹ️ No coverage report found - tests will be added in NUA-2 and NUA-3"
+        fi
+
+    - name: Upload Coverage Report
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: coverage-report
+        path: coverage/
+        retention-days: 30
+
+  e2e-tests:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_USER: postgres
+          POSTGRES_DB: nua_messaging_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      redis:
+        image: redis
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Ruby Environment
+      uses: ./.github/actions/setup-ruby
+      with:
+        setup-database: 'true'
+        create-storage-dirs: 'true'
+
+    - name: Run E2E Tests with Rails Server
+      env:
+        DB_USERNAME: postgres
+        DB_PASSWORD: postgres
+        DB_HOST: 127.0.0.1
+        DB_PORT: 5432
+      run: |
+        echo "🚀 Starting Rails server for E2E tests..."
+        RAILS_ENV=test bundle exec rails server -p 3000 -d
+        sleep 15  # Wait for server to start
+
+        echo " Running Cucumber E2E tests..."
+        if bundle exec cucumber --format progress; then
+          echo "✅ Cucumber E2E tests passed successfully"
+        else
+          echo "❌ Cucumber E2E tests failed"
+          echo "🛑 Stopping Rails server..."
+          pkill -f "rails server" || true
+          exit 1
+        fi
+
+        echo "🛑 Stopping Rails server..."
+        pkill -f "rails server" || true
+
+    - name: Upload Cucumber Screenshots
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: cucumber-screenshots
+        path: tmp/capybara/
+        retention-days: 30
+
+
+
+  quality-summary:
+    runs-on: ubuntu-latest
+    needs: [rubocop, reek, brakeman, translations, test-coverage, e2e-tests]
+    if: always()
+    steps:
+    - name: Quality Check Summary
+      run: |
+        echo "## 🔍 Quality Check Results" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+
+        # Check each job status
+        if [ "${{ needs.rubocop.result }}" == "success" ]; then
+          echo "✅ **RuboCop**: Code style and formatting - PASSED" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "❌ **RuboCop**: Code style and formatting - FAILED" >> $GITHUB_STEP_SUMMARY
+        fi
+
+        if [ "${{ needs.reek.result }}" == "success" ]; then
+          echo "✅ **Reek**: Code smell detection - PASSED" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "❌ **Reek**: Code smell detection - FAILED" >> $GITHUB_STEP_SUMMARY
+        fi
+
+        if [ "${{ needs.brakeman.result }}" == "success" ]; then
+          echo "✅ **Brakeman**: Security vulnerability scanning - PASSED" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "❌ **Brakeman**: Security vulnerability scanning - FAILED" >> $GITHUB_STEP_SUMMARY
+        fi
+
+        if [ "${{ needs.translations.result }}" == "success" ]; then
+          echo "✅ **Translations**: Missing/unused translation checks - PASSED" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "❌ **Translations**: Missing/unused translation checks - FAILED" >> $GITHUB_STEP_SUMMARY
+        fi
+
+        if [ "${{ needs.test-coverage.result }}" == "success" ]; then
+          echo "✅ **Test Coverage**: Code coverage analysis - PASSED" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "⚠️ **Test Coverage**: Code coverage analysis - SKIPPED/FAILED (expected for early development)" >> $GITHUB_STEP_SUMMARY
+        fi
+
+        if [ "${{ needs.e2e-tests.result }}" == "success" ]; then
+          echo "✅ **Cucumber E2E**: End-to-end tests - PASSED" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "❌ **Cucumber E2E**: End-to-end tests - FAILED" >> $GITHUB_STEP_SUMMARY
+        fi
+
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "📊 Reports available in artifacts" >> $GITHUB_STEP_SUMMARY

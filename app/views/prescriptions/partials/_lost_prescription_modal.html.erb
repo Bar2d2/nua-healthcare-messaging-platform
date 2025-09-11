@@ -1,0 +1,68 @@
+<!-- Lost Prescription Request Modal -->
+<div class="modal fade"
+     id="lostPrescriptionModal"
+     tabindex="-1"
+     aria-labelledby="lostPrescriptionModalLabel"
+     aria-hidden="true"
+     data-controller="modal"
+     data-bs-backdrop="false">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header border-0 pb-0">
+        <h5 class="modal-title text-primary" id="lostPrescriptionModalLabel">
+           <%= t('prescriptions.lost_prescription.modal_title') %>
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+
+      <div class="modal-body">
+        <div class="alert alert-warning">
+
+          <strong><%= t('prescriptions.lost_prescription.fee_warning') %></strong>
+        </div>
+
+                <p class="mb-3">
+          <%= t('prescriptions.lost_prescription.description') %>
+        </p>
+
+        <div class="bg-light p-3 rounded mb-3">
+          <h6 class="mb-2"><%= t('prescriptions.lost_prescription.what_happens_next') %></h6>
+          <ol class="mb-0 small">
+            <li><%= t('prescriptions.lost_prescription.step_1') %></li>
+            <li><%= t('prescriptions.lost_prescription.step_2') %></li>
+            <li><%= t('prescriptions.lost_prescription.step_3') %></li>
+            <li><%= t('prescriptions.lost_prescription.step_4') %></li>
+          </ol>
+        </div>
+
+        <div class="alert alert-info">
+          <small>
+
+            <strong><%= t('common.note') %>:</strong> <%= t('prescriptions.lost_prescription.note') %>
+          </small>
+        </div>
+      </div>
+
+      <div class="modal-footer border-0 pt-0">
+        <%= form_with url: prescriptions_path,
+            method: :post,
+            id: "prescriptionRequestForm",
+            class: "w-100",
+            data: { modal_target: "form" } do |f| %>
+          <div class="d-flex gap-2">
+            <button type="button" class="btn btn-outline-secondary flex-fill" data-bs-dismiss="modal">
+              <%= t('prescriptions.buttons.cancel') %>
+            </button>
+                <%= f.submit t('prescriptions.buttons.request_prescription'),
+                class: "btn btn-primary flex-fill",
+                data: {
+                  disable_with: " Processing Payment..."
+                } %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Notifications handled by global container in layout -->

@@ -1,0 +1,76 @@
+<div class="conversation-container" data-controller="conversation">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h4 class="mb-1">
+        <% if @message.outbox.user.is_doctor? %>Dr.<% end %>
+        <%= @message.outbox.user.full_name %>
+      </h4>
+      <small class="text-muted">
+        <%= t('.conversation_started') %> <%= time_ago_in_words(@message.created_at) %> <%= t('common.ago') %>
+      </small>
+    </div>
+    <div class="d-flex gap-2">
+      <!-- Admin Prescription Action Button -->
+      <% if current_user.is_admin? %>
+        <% conversation_messages = @message.conversation_messages %>
+        <% prescription_message = conversation_messages.find { |msg| prescription_request_message?(msg) } %>
+        <% if prescription_message %>
+          <% prescription = find_prescription_from_message(prescription_message) %>
+          <% if prescription %>
+            <div id="prescription-action-button-<%= prescription.id %>">
+              <% case prescription.status %>
+              <% when 'requested' %>
+                <%= button_to generate_prescription_path(prescription),
+                    method: :post,
+                    params: { message_id: prescription_message.id },
+                    class: "btn btn-success",
+                    title: "Generate and Send Prescription",
+                    data: {
+                      turbo_submits_with: "Processing...",
+                      turbo: true
+                    } do %>
+                  <span class="btn-text"><%= t('prescriptions.buttons.generate_and_send') %></span>
+                <% end %>
+              <% when 'ready' %>
+                <button type="button"
+                        class="btn btn-secondary"
+                        disabled
+                        title="Prescription already generated">
+                  <%= t('prescriptions.admin.already_generated') %>
+                </button>
+              <% when 'payment_rejected' %>
+                <button type="button"
+                        class="btn btn-outline-danger"
+                        disabled
+                        title="Payment was rejected">
+                  <%= t('prescriptions.admin.payment_failed') %>
+                </button>
+              <% end %>
+            </div>
+          <% end %>
+        <% end %>
+      <% end %>
+
+      <%= link_to t('.reply'), new_message_path(parent_message_id: @message.id),
+          class: 'btn btn-primary' %>
+      <%= link_to t('common.back'), inbox_path, class: 'btn btn-outline-secondary' %>
+    </div>
+  </div>
+
+  <!-- Conversation thread -->
+  <% if @message.parent_message.present? || @message.replies.any? %>
+    <div class="conversation-thread" data-conversation-target="thread">
+      <%= render partial: 'messages/partials/conversation/thread', locals: { message: @message } %>
+    </div>
+  <% else %>
+    <!-- Show the original message when no conversation thread exists -->
+    <div class="conversation-thread" data-conversation-target="thread">
+      <div class="list-group w-auto" id="conversation-thread">
+        <%= render partial: 'messages/partials/conversation/message', locals: { message: @message } %>
+      </div>
+    </div>
+  <% end %>
+</div>
+
+<!-- Turbo Stream target for real-time conversation updates -->
+<%= turbo_stream_from "conversation_#{@message.conversation_root.id}" %>

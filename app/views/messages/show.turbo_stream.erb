@@ -1,0 +1,10 @@
+<%= turbo_stream.replace dom_id(@message) do %>
+  <%= render partial: 'messages/partials/list/message_item', locals: { message: @message } %>
+<% end %>
+
+<%= turbo_stream.update "flash" do %>
+  <div class="alert alert-danger alert-dismissible fade show" role="alert">
+    <%= @message.errors.full_messages.join(', ') %>
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+  </div>
+<% end %>

@@ -1,0 +1,6 @@
+<div class="list-group w-auto" id="conversation-thread">
+  <% conversation_messages = message.conversation_messages %>
+  <% conversation_messages.each do |msg| %>
+    <%= render partial: 'messages/partials/conversation/message', locals: { message: msg } %>
+  <% end %>
+</div>

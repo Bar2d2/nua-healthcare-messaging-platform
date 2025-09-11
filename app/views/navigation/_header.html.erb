@@ -1,0 +1,28 @@
+<%# MessageDecorator methods: outbox_active?, inbox_active? %>
+<header class="d-flex flex-wrap justify-content-center py-3 mb-4 border-bottom">
+  <a href="/" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-dark text-decoration-none">
+    <span class="fs-4"><%= t('application.title') %></span>
+  </a>
+  <div class="d-flex align-items-center gap-3">
+    <ul class="nav nav-pills mb-0">
+      <li class="nav-item position-relative">
+        <%= link_to t('navigation.inbox'), inbox_path,
+            class: "nav-link #{'active' if (@message&.decorate&.inbox_active?(current_user, request)) || request.path == '/inbox'}" %>
+        <div class="position-absolute top-0 start-0 translate-middle">
+          <% if current_user&.inbox %>
+            <%= turbo_stream_from "inbox_#{current_user.inbox.id}" %>
+            <div id="inbox_unread_count_<%= current_user.inbox.id %>" data-turbo-permanent>
+              <%= render 'inboxes/unread_count', inbox: current_user.inbox %>
+            </div>
+          <% end %>
+        </div>
+      </li>
+      <li class="nav-item">
+        <%= link_to t('navigation.outbox'), outbox_path,
+            class: "nav-link #{'active' if (@message&.decorate&.outbox_active?(current_user, request)) || request.path == '/outbox'}" %>
+      </li>
+    </ul>
+
+    <%= render 'shared/user_switcher' %>
+  </div>
+</header>

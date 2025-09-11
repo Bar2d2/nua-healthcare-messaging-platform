@@ -1,0 +1,27 @@
+# Global code owners
+* @BartOz
+
+# Rails application files
+app/ @BartOz
+config/ @BartOz
+db/ @BartOz
+lib/ @BartOz
+
+# Testing files
+spec/ @BartOz
+features/ @BartOz
+test/ @BartOz
+
+# Configuration files
+Gemfile @BartOz
+Gemfile.lock @BartOz
+.rubocop.yml @BartOz
+.reek.yml @BartOz
+Rakefile @BartOz
+
+# Documentation
+README.md @BartOz
+*.md @BartOz
+
+# GitHub Actions
+.github/ @BartOz

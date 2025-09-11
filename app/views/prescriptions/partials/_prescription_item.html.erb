@@ -1,0 +1,51 @@
+<div class="list-group-item d-flex justify-content-between align-items-center py-3" id="prescription_<%= prescription.id %>">
+  <div class="d-flex align-items-center flex-grow-1">
+    <!-- Main Content -->
+    <div class="flex-grow-1">
+      <div class="d-flex align-items-center mb-2">
+
+        <h6 class="mb-0 text-dark">Prescription Request</h6>
+        <span class="badge bg-<%= prescription.status_badge_color %> ms-2">
+          <%= prescription.status.humanize %>
+        </span>
+      </div>
+
+      <div class="text-muted small">
+        <%= prescription.requested_at.strftime("%B %d, %Y at %I:%M %p") %>
+        <% if prescription.ready_at %>
+          <br>Ready: <%= prescription.ready_at.strftime("%B %d, %Y at %I:%M %p") %>
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+    <!-- Action -->
+  <div class="ms-3">
+    <% if prescription.downloadable? %>
+      <button type="button"
+              class="btn btn-primary btn-sm"
+              onclick="window.open('<%= prescription.pdf_url %>', '_blank', 'width=800,height=600,scrollbars=yes,resizable=yes')"
+              title="View Prescription">
+         View PDF
+      </button>
+                                                      <% elsif prescription.retryable? %>
+              <button type="button"
+                      class="btn btn-outline-warning btn-sm"
+                      title="Retry Payment"
+                      data-bs-toggle="modal"
+                      data-bs-target="#retryConfirmationModal"
+                      data-retry-url="<%= retry_payment_prescription_path(prescription) %>">
+                Retry Payment
+              </button>
+    <% elsif prescription.processing? %>
+      <div class="text-info d-flex align-items-center">
+        <div class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></div>
+        Processing Payment...
+      </div>
+    <% elsif prescription.requested? %>
+      <div class="text-success">
+        <small>Awaiting Admin approval</small>
+      </div>
+    <% end %>
+  </div>
+</div>

@@ -1,0 +1,14 @@
+<% case prescription.status %>
+<% when 'requested' %>
+  <small class="text-muted d-block mt-1">
+    <span class="badge bg-info"><%= t('prescriptions.admin.request_badge') %></span>
+  </small>
+<% when 'ready' %>
+  <small class="text-muted d-block mt-1">
+    <span class="badge bg-success"><%= t('prescriptions.admin.already_generated') %></span>
+  </small>
+<% when 'payment_rejected' %>
+  <small class="text-muted d-block mt-1">
+    <span class="badge bg-danger"><%= t('prescriptions.admin.payment_failed') %></span>
+  </small>
+<% end %>

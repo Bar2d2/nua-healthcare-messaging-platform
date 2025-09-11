@@ -1,0 +1,12 @@
+# Cucumber configuration file
+# See https://github.com/cucumber/cucumber-rails for more details
+
+default: --format pretty --tags "not @wip" --publish-quiet
+wip: --tags @wip:3 --format progress
+api: --format pretty --tags @api --publish-quiet
+web: --format pretty --tags @web --publish-quiet
+e2e: --format pretty --tags "@api or @web" --publish-quiet
+rerun: --format pretty --format rerun --out tmp/rerun.txt
+html: --format html --out features/reports/index.html
+json: --format json --out features/reports/cucumber.json
+junit: --format junit --out features/reports

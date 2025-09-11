@@ -1,0 +1,13 @@
+<div class="messages-container" data-controller="messages">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h4><%= t('.title') %></h4>
+    <%= link_to t('.new_message'), new_message_path, class: 'btn btn-primary' %>
+  </div>
+
+  <div class="messages-list" data-messages-target="list" id="messages-list">
+    <%= render partial: 'messages/partials/list/messages_list', locals: { messages: @messages } %>
+  </div>
+</div>
+
+<!-- Turbo Stream target for real-time updates -->
+<%= turbo_stream_from "messages" %>

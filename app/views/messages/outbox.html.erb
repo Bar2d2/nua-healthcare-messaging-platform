@@ -1,0 +1,45 @@
+<div class="outbox-container" data-controller="messages">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h4><%= t('messages.outbox.title') %></h4>
+    <div class="d-flex gap-2">
+      <% if current_user.is_patient? %>
+        <%= link_to prescriptions_path, class: "btn btn-outline-primary" do %>
+           <%= t('prescriptions.buttons.prescriptions') %>
+        <% end %>
+      <% end %>
+      <a class="btn btn-primary" href="<%= new_message_path %>"><%= t('messages.new.title') %></a>
+    </div>
+  </div>
+
+  <div class="outbox-list" data-messages-target="list">
+    <!-- Always present target for Turbo Streams -->
+    <div class="list-group w-auto" id="outbox-list">
+      <% @messages.each do |message| %>
+        <%= render 'messages/partials/list/sent_message_item', message: message %>
+      <% end %>
+    </div>
+
+    <% if @messages.any? %>
+      <!-- High-performance pagination with Bootstrap styling -->
+      <div id="outbox-pagination-nav">
+        <%= render 'shared/pagination_nav', pagy: @pagy %>
+      </div>
+
+      <!-- Pagination info -->
+      <div id="outbox-pagination-info">
+        <%= render 'shared/pagination_info', pagy: @pagy %>
+      </div>
+    <% else %>
+      <div class="text-center py-5">
+        <p class="text-muted"><%= t('messages.outbox.empty') %></p>
+        <a href="<%= new_message_path %>" class="btn btn-primary"><%= t('messages.new.start_conversation') %></a>
+      </div>
+    <% end %>
+  </div>
+</div>
+
+
+
+<!-- Turbo Stream targets for real-time updates -->
+<%= turbo_stream_from "messages" %>
+<%= turbo_stream_from "user_#{current_user.id}_outbox" %>
