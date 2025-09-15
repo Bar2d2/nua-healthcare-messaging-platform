@@ -9,11 +9,9 @@ class UserSwitchingService
       user = find_user_by_role(role)
 
       if user
-        # Store in session only - this is our single source of truth
-        session[:demo_user_id] = user.id
-        Rails.logger.info "Switched to demo user: #{user.role} (#{user.full_name})"
+        store_user_in_session(session, user)
       else
-        Rails.logger.error "Failed to find user for role: #{role}"
+        log_role_switch_failure(role)
       end
 
       user
@@ -43,14 +41,37 @@ class UserSwitchingService
       demo_user_id = session[:demo_user_id]
       return unless demo_user_id
 
+      validate_and_log_demo_user(session, demo_user_id)
+    end
+
+    private
+
+    def store_user_in_session(session, user)
+      session[:demo_user_id] = user.id
+      Rails.logger.info "Switched to demo user: #{user.role} (#{user.full_name})"
+    end
+
+    def log_role_switch_failure(role)
+      Rails.logger.error "Failed to find user for role: #{role}"
+    end
+
+    def validate_and_log_demo_user(session, demo_user_id)
       user = User.find_by(id: demo_user_id)
+
       if user
-        Rails.logger.debug { "Demo user context validated: #{user.role} (#{user.full_name})" }
+        log_demo_user_validation_success(user)
       else
-        # Clear invalid session data
-        session.delete(:demo_user_id)
-        Rails.logger.warn "Invalid demo user ID #{demo_user_id} removed from session"
+        clear_invalid_session_data(session, demo_user_id)
       end
+    end
+
+    def log_demo_user_validation_success(user)
+      Rails.logger.debug { "Demo user context validated: #{user.role} (#{user.full_name})" }
+    end
+
+    def clear_invalid_session_data(session, demo_user_id)
+      session.delete(:demo_user_id)
+      Rails.logger.warn "Invalid demo user ID #{demo_user_id} removed from session"
     end
 
     # Get available roles for switching
@@ -61,8 +82,6 @@ class UserSwitchingService
         { role: 'admin', label: '⚙️ Admin', user: User.admin.first }
       ].select { |role_info| role_info[:user].present? }
     end
-
-    private
 
     def find_user_by_role(role)
       patient_user = User.patient.first

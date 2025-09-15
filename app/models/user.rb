@@ -26,9 +26,12 @@ class User < ApplicationRecord
     # Supports demo user switching in non-production environments.
     def current(session = nil)
       # Check for demo user switching in non-production environments
-      if session && session[:demo_user_id].present?
-        demo_user = User.find_by(id: session[:demo_user_id])
-        return demo_user if demo_user
+      if session
+        demo_user_id = session[:demo_user_id]
+        if demo_user_id.present?
+          demo_user = User.find_by(id: demo_user_id)
+          return demo_user if demo_user
+        end
       end
 
       User.patient.first

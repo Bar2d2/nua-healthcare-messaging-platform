@@ -52,7 +52,6 @@ Metrics/BlockLength:
     - 'config/routes.rb'
     - 'lib/tasks/auto_annotate_models.rake'
     - 'lib/tasks/quality_gate.rake'
-    - 'lib/tasks/message_generation.rake'  # Task with comprehensive message generation logic
 
 Metrics/ClassLength:
   Exclude:

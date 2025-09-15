@@ -41,9 +41,9 @@ Given('I have test users in the system') do
 end
 
 Given('I am logged in as a patient') do
-  # Override the User.current method for this test
+  # Override User.current for test context with correct signature
   User.class_eval do
-    def self.current
+    def self.current(_session = nil)
       User.find_by(first_name: 'Test', last_name: 'Patient')
     end
   end
@@ -51,9 +51,9 @@ Given('I am logged in as a patient') do
 end
 
 Given('I am logged in as a doctor') do
-  # Override the User.current method for this test
+  # Override User.current for test context with correct signature
   User.class_eval do
-    def self.current
+    def self.current(_session = nil)
       User.find_by(first_name: 'Dr. Test', last_name: 'Doctor')
     end
   end
@@ -61,8 +61,9 @@ Given('I am logged in as a doctor') do
 end
 
 Given('I am logged in as an admin') do
+  # Override User.current for test context with correct signature
   User.class_eval do
-    def self.current
+    def self.current(_session = nil)
       User.find_by(first_name: 'Obi-wan', last_name: 'Kenobi')
     end
   end
