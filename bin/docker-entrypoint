@@ -1,0 +1,25 @@
+#!/bin/bash -e
+
+# Enable jemalloc for reduced memory usage and latency.
+if [ -z "${LD_PRELOAD+x}" ]; then
+    LD_PRELOAD=$(find /usr/lib -name libjemalloc.so.2 -print -quit)
+    export LD_PRELOAD
+fi
+
+# Debug: Print the arguments being passed
+echo "🔍 Docker entrypoint called with arguments: $*"
+
+# If running the rails server then create or migrate existing database
+if [[ "${1:-}" == *"rails"* ]] && [[ "${2:-}" == "server" ]]; then
+  echo "🔍 Starting Rails application..."
+
+  echo "🗄️ Preparing database..."
+  ./bin/rails db:prepare || {
+    echo "❌ Database preparation failed"
+    exit 1
+  }
+
+  echo "🚀 Rails server ready to start..."
+fi
+
+exec "$@"

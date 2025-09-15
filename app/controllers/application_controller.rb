@@ -15,7 +15,7 @@ class ApplicationController < ActionController::Base
 
   # Get the current user for the application
   def current_user
-    @current_user ||= User.current
+    @current_user ||= User.current(session)
   end
 
   # Restore demo user switching state from session

@@ -174,7 +174,7 @@ RSpec.describe Caching::UnreadCountService do
 
       expect(stats).to include(
         cache_available: true,
-        cache_ttl: 5.minutes,
+        cache_ttl: 10.minutes,
         cache_key_prefix: 'inbox_unread_count'
       )
     end

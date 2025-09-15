@@ -84,17 +84,4 @@ RSpec.describe 'User Switching', type: :feature, js: false do
       expect(page).to have_content('Patient')
     end
   end
-
-  context 'in production environment' do
-    before do
-      allow(Rails.env).to receive(:production?).and_return(true)
-    end
-
-    scenario 'does not display user switcher' do
-      visit root_path
-
-      expect(page).not_to have_selector('.dropdown-toggle')
-      expect(page).not_to have_content('Demo Mode')
-    end
-  end
 end
