@@ -13,6 +13,7 @@ gem 'importmap-rails', '~> 1.0'
 gem 'jbuilder', '~> 2.11'
 gem 'jquery-rails', '~> 4.6'
 gem 'jwt', '~> 2.7'
+gem 'kamal', '~> 2.0'
 gem 'pagy', '~> 9.0'
 gem 'pg', '~> 1.5'
 gem 'propshaft', '~> 0.7'
@@ -27,7 +28,6 @@ gem 'rswag-ui', '~> 2.12'
 gem 'sidekiq', '~> 7.2'
 gem 'stimulus-rails', '~> 1.3'
 gem 'turbo-rails', '~> 1.5'
-gem 'kamal', '~> 2.0'
 
 group :development, :test do
   gem 'capybara', '~> 3.40'
@@ -44,10 +44,10 @@ end
 
 group :development do
   gem 'better_errors', '~> 2.10'
+  gem 'dockerfile-rails', '>= 1.7'
   gem 'foreman', '~> 0.87'
   gem 'pry-byebug', '~> 3.10'
   gem 'web-console', '~> 4.2'
-  gem "dockerfile-rails", ">= 1.7"
 end
 
 group :test do

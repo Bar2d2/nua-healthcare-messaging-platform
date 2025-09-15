@@ -4,14 +4,13 @@
 # Provides session-based user switching without affecting authentication logic.
 class UserSwitchingService
   class << self
-    # Switch to a specific user role and store in thread
+    # Switch to a specific user role and store in session only
     def switch_to_role(session, role)
       user = find_user_by_role(role)
 
       if user
-        # Store in both session (for persistence) and thread (for immediate access)
+        # Store in session only - this is our single source of truth
         session[:demo_user_id] = user.id
-        User.current_demo_user = user
         Rails.logger.info "Switched to demo user: #{user.role} (#{user.full_name})"
       else
         Rails.logger.error "Failed to find user for role: #{role}"
@@ -31,7 +30,7 @@ class UserSwitchingService
     # Clear demo user switching (return to default)
     def clear_demo_user(session)
       session.delete(:demo_user_id)
-      User.clear_demo_user
+      Rails.logger.info 'Cleared demo user switching - returned to default user'
     end
 
     # Check if demo switching is active
@@ -39,15 +38,14 @@ class UserSwitchingService
       session[:demo_user_id].present?
     end
 
-    # Restore demo user from session to thread (for new requests)
+    # Validate and clean session data (no thread restoration needed)
     def restore_demo_user_from_session(session)
       demo_user_id = session[:demo_user_id]
       return unless demo_user_id
 
       user = User.find_by(id: demo_user_id)
       if user
-        User.current_demo_user = user
-        Rails.logger.debug "Restored demo user context: #{user.role} (#{user.full_name})"
+        Rails.logger.debug { "Demo user context validated: #{user.role} (#{user.full_name})" }
       else
         # Clear invalid session data
         session.delete(:demo_user_id)
