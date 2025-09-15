@@ -8,9 +8,14 @@ class UserSwitchingService
     def switch_to_role(session, role)
       user = find_user_by_role(role)
 
-      # Store in both session (for persistence) and thread (for immediate access)
-      session[:demo_user_id] = user&.id
-      User.current_demo_user = user
+      if user
+        # Store in both session (for persistence) and thread (for immediate access)
+        session[:demo_user_id] = user.id
+        User.current_demo_user = user
+        Rails.logger.info "Switched to demo user: #{user.role} (#{user.full_name})"
+      else
+        Rails.logger.error "Failed to find user for role: #{role}"
+      end
 
       user
     end
@@ -40,7 +45,14 @@ class UserSwitchingService
       return unless demo_user_id
 
       user = User.find_by(id: demo_user_id)
-      User.current_demo_user = user if user
+      if user
+        User.current_demo_user = user
+        Rails.logger.debug "Restored demo user context: #{user.role} (#{user.full_name})"
+      else
+        # Clear invalid session data
+        session.delete(:demo_user_id)
+        Rails.logger.warn "Invalid demo user ID #{demo_user_id} removed from session"
+      end
     end
 
     # Get available roles for switching
