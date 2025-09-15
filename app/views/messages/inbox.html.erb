@@ -46,4 +46,4 @@
 
 <!-- Turbo Stream targets for real-time updates -->
 <%= turbo_stream_from "messages" %>
-<%= turbo_stream_from "user_#{current_user.id}_inbox" %>
+<%= turbo_stream_from "inbox_#{current_user.inbox.id}" %>

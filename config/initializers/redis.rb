@@ -12,7 +12,7 @@ unless ENV['RAILS_GROUPS'] == 'assets' || ENV['SECRET_KEY_BASE_DUMMY']
               when 'development'
                 ENV.fetch('REDIS_URL', 'redis://localhost:6379/0') # Default DB
               else
-                ENV.fetch('REDIS_URL', 'redis://localhost:6379/1') # Production with fallback
+                ENV.fetch('REDIS_URL', 'redis://nua-healthcare-app-redis:6379/0') # Production with Kamal accessory
               end
 
   # Configure Redis connection pool for performance

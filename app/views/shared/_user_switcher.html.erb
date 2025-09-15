@@ -1,4 +1,5 @@
-<% unless Rails.env.production? %>
+<%# Show user switcher in all environments for demo purposes %>
+<% if true # enabled for demo purposes %>
   <% if current_user %>
     <div class="dropdown" data-turbo-permanent>
       <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">

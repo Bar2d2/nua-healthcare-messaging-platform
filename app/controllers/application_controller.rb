@@ -5,8 +5,8 @@ class ApplicationController < ActionController::Base
 
   protect_from_forgery with: :exception
 
-  # Restore demo user from session for user switching functionality (non-production only)
-  before_action :restore_demo_user_from_session, unless: -> { Rails.env.production? }
+  # Restore demo user from session for user switching functionality (enabled for demo purposes)
+  before_action :restore_demo_user_from_session
 
   # Make current_user available to all views
   helper_method :current_user

@@ -40,7 +40,12 @@ class UserSwitchingService
       return unless demo_user_id
 
       user = User.find_by(id: demo_user_id)
-      User.current_demo_user = user if user
+      if user
+        User.current_demo_user = user
+        # Ensure user has proper inbox/outbox for context switching
+        user.inbox ||= user.create_inbox
+        user.outbox ||= user.create_outbox
+      end
     end
 
     # Get available roles for switching

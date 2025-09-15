@@ -12,8 +12,8 @@ unless ENV['RAILS_GROUPS'] == 'assets' || ENV['SECRET_KEY_BASE_DUMMY']
                    # Use default database with graceful fallback
                    { url: ENV.fetch('REDIS_URL', 'redis://localhost:6379/0') }
                  else
-                   # Production configuration with fallback
-                   { url: ENV.fetch('REDIS_URL', 'redis://localhost:6379/1') }
+                   # Production configuration with Kamal accessory
+                   { url: ENV.fetch('REDIS_URL', 'redis://nua-healthcare-app-redis:6379/0') }
                  end
 
 # Test Redis connection before configuring Sidekiq
@@ -35,14 +35,24 @@ if redis_available
 
     # Configure queues with priorities for broadcasting
     # Include both prefixed (ActiveJob) and non-prefixed queues
-    env_prefix = Rails.env.development? ? 'nua_messaging_development_' : ''
+    env_prefix = case Rails.env
+                 when 'development'
+                   'nua_messaging_development_'
+                 when 'production'
+                   'nua_messaging_production_'
+                 else
+                   ''
+                 end
+
     config.queues = [
       "#{env_prefix}high_priority",
       "#{env_prefix}default",
       "#{env_prefix}low_priority",
+      "#{env_prefix}mailers",
       'high_priority',  # Fallback for non-prefixed
       'default',
-      'low_priority'
+      'low_priority',
+      'mailers'
     ]
 
     # Logging configuration

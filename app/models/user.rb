@@ -23,24 +23,20 @@ class User < ApplicationRecord
 
   class << self
     # Returns the current user for the session.
-    # Supports demo user switching in non-production environments.
+    # Supports demo user switching in all environments for demo purposes.
     def current
-      # Check for demo user switching in non-production environments
-      unless Rails.env.production?
-        demo_user_id = Thread.current[:demo_user_id]
-        if demo_user_id
-          demo_user = User.find_by(id: demo_user_id)
-          return demo_user if demo_user
-        end
+      # Check for demo user switching (enabled in all environments for demo)
+      demo_user_id = Thread.current[:demo_user_id]
+      if demo_user_id
+        demo_user = User.find_by(id: demo_user_id)
+        return demo_user if demo_user
       end
 
       User.patient.first
     end
 
-    # Set demo user for current thread (non-production only)
+    # Set demo user for current thread (enabled in all environments for demo)
     def current_demo_user=(user)
-      return if Rails.env.production?
-
       Thread.current[:demo_user_id] = user&.id
     end
 

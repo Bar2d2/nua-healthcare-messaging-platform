@@ -72,6 +72,9 @@ class PrescriptionPaymentJob < ApplicationJob
 
     # 2. SECOND: Broadcast success to patient AFTER admin notification with wait
     broadcast_payment_success(prescription, wait_for_message: true)
+
+    # 3. THIRD: Update prescription list in real-time after payment success
+    Broadcasting::PrescriptionUpdatesService.broadcast_prescription_updated(prescription)
   end
 
   # Handle payment failure

@@ -38,13 +38,26 @@ module Broadcasting
       def broadcast_prescription_added_sync(prescription)
         return unless prescription&.user
 
-        # Simplified: always prepend to list, let UI handle empty state
+        user = prescription.user
+
+        # Check if this is the first prescription (was empty state)
+        was_empty = user.prescriptions.count == 1
+
+        # Always prepend to list
         Broadcasting::TurboStreamsService.broadcast_prepend_to(
-          prescription_stream(prescription.user),
+          prescription_stream(user),
           target: 'prescriptions-items',
           partial: 'prescriptions/partials/prescription_item',
           locals: { prescription: prescription }
         )
+
+        # If transitioning from empty to first prescription, hide empty state
+        if was_empty
+          Broadcasting::TurboStreamsService.broadcast_remove_to(
+            prescription_stream(user),
+            target: 'prescriptions-empty-state'
+          )
+        end
 
         # Update pagination info
         Broadcasting::PaginationUpdatesService.enqueue_prescription_pagination_update(prescription.user)

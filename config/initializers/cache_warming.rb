@@ -28,7 +28,8 @@ CACHE_WARMING_CONFIG = {
 }.freeze
 
 # Schedule cache warming on application boot (production only)
-if CACHE_WARMING_CONFIG[:enabled]
+# Skip during asset precompilation to avoid Redis connection during build
+if CACHE_WARMING_CONFIG[:enabled] && !ENV['SECRET_KEY_BASE_DUMMY']
   Rails.application.config.after_initialize do
     # Warm caches on application start
     CacheWarmingJob.perform_later(:unread_counts)

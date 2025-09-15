@@ -23,6 +23,10 @@ module Broadcasting
         Turbo::StreamsChannel.broadcast_update_to(stream, target: target, partial: partial, locals: locals)
       end
 
+      def broadcast_remove_to(stream, target:)
+        Turbo::StreamsChannel.broadcast_remove_to(stream, target: target)
+      end
+
       # == Stream Naming Conventions ==
       # Consistent stream names across the application
 

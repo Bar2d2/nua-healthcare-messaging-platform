@@ -34,7 +34,7 @@ class Message < ApplicationRecord
   # == Callbacks ==
   # Use background jobs for broadcasting to improve performance
   after_create_commit :enqueue_broadcast_message
-  after_update_commit :enqueue_broadcast_update
+  after_update_commit :enqueue_broadcast_update, if: :should_broadcast_update?
 
   # Unread count management (async for performance)
   after_create_commit :enqueue_increment_inbox_unread_count
@@ -137,6 +137,11 @@ class Message < ApplicationRecord
     participant_service.first_doctor
   end
 
+  # Check if message is unread
+  def unread?
+    !read_already?
+  end
+
   # == Private Methods ==
 
   private
@@ -182,13 +187,8 @@ class Message < ApplicationRecord
     return if inbox.blank?
 
     inbox_id = inbox.id
-    operation = read? ? 'decrement' : 'increment'
+    operation = read_already? ? 'decrement' : 'increment'
     UnreadCountUpdateJob.perform_later(inbox_id, operation)
-  end
-
-  # Check if message is unread
-  def unread?
-    !read?
   end
 
   # Get time when message was read
@@ -198,7 +198,7 @@ class Message < ApplicationRecord
 
   # Check if message was read recently (within specified time)
   def read_recently?(within: 1.hour)
-    read? && read_at.present? && read_at > within.ago
+    read_already? && read_at.present? && read_at > within.ago
   end
 
   # == Cache Operations (delegated to caching service) ==
@@ -215,6 +215,14 @@ class Message < ApplicationRecord
 
     # For updates, only invalidate if content or status changed
     saved_change_to_body? || saved_change_to_status? || saved_change_to_read?
+  end
+
+  # == Performance Optimization Methods ==
+
+  # Throttle broadcast updates (only for significant changes)
+  def should_broadcast_update?
+    # Only broadcast for status or read state changes
+    saved_change_to_status? || saved_change_to_read?
   end
 end
 

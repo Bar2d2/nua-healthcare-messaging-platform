@@ -50,16 +50,14 @@ module SharedSetup
   end
 
   def reset_user_current
-    # Reset User.current to the original implementation
+most    # Reset User.current to the original implementation (enabled in all environments for demo)
     User.class_eval do
       def self.current
-        # Check for demo user switching in non-production environments
-        unless Rails.env.production?
-          demo_user_id = Thread.current[:demo_user_id]
-          if demo_user_id
-            demo_user = User.find_by(id: demo_user_id)
-            return demo_user if demo_user
-          end
+        # Check for demo user switching (enabled in all environments for demo purposes)
+        demo_user_id = Thread.current[:demo_user_id]
+        if demo_user_id
+          demo_user = User.find_by(id: demo_user_id)
+          return demo_user if demo_user
         end
 
         User.patient.first

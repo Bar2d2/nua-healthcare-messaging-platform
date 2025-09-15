@@ -74,3 +74,8 @@ log/*.log.*
 # Ignore Redis database files
 dump.rdb
 *.rdb
+
+/config/master.key
+
+# Ignore Kamal secrets file (contains sensitive deployment data)
+.kamal/secrets

@@ -27,6 +27,7 @@ gem 'rswag-ui', '~> 2.12'
 gem 'sidekiq', '~> 7.2'
 gem 'stimulus-rails', '~> 1.3'
 gem 'turbo-rails', '~> 1.5'
+gem 'kamal', '~> 2.0'
 
 group :development, :test do
   gem 'capybara', '~> 3.40'

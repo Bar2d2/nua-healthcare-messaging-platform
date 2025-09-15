@@ -36,6 +36,9 @@ Rails.application.routes.draw do
     end
   end
 
+  # Health check endpoint for deployment monitoring (Kamal)
+  get "up" => "rails/health#show", as: :rails_health_check
+
   # Web Routes
   root to: 'messages#index'
 
@@ -57,19 +60,19 @@ Rails.application.routes.draw do
     end
   end
 
-  # Demo user switching routes (development and test environments)
-  unless Rails.env.production?
-    scope :demo do
-      post 'switch_to_patient', to: 'user_switching#switch_to_patient', as: :switch_to_patient
-      post 'switch_to_doctor', to: 'user_switching#switch_to_doctor', as: :switch_to_doctor
-      post 'switch_to_admin', to: 'user_switching#switch_to_admin', as: :switch_to_admin
-      post 'clear_user_switch', to: 'user_switching#clear_user_switch', as: :clear_user_switch
-    end
+  # Demo user switching routes (enabled in all environments for demo purposes)
+  scope :demo do
+    post 'switch_to_patient', to: 'user_switching#switch_to_patient', as: :switch_to_patient
+    post 'switch_to_doctor', to: 'user_switching#switch_to_doctor', as: :switch_to_doctor
+    post 'switch_to_admin', to: 'user_switching#switch_to_admin', as: :switch_to_admin
+    post 'clear_user_switch', to: 'user_switching#clear_user_switch', as: :clear_user_switch
+  end
 
-    # Performance monitoring routes
+  # Performance monitoring routes (development and test environments)
+  unless Rails.env.production?
     scope :performance do
       get '/', to: 'performance#index', as: :performance_dashboard
-      post 'profile/:operation', to: 'performance#profile', as: :performance_profile
+      post 'profile/:operation', to:'performance#profile', as: :performance_profile
       post 'benchmark', to: 'performance#benchmark', as: :performance_benchmark
     end
   end
