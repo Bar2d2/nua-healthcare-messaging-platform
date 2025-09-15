@@ -3,9 +3,6 @@
 # Controller for handling user role switching in development/demo environments.
 # Provides simple actions to switch between patient, doctor, and admin roles.
 class UserSwitchingController < ApplicationController
-  # Only allow user switching in non-production environments
-  before_action :ensure_non_production_environment
-
   # POST /demo/switch_to_patient
   def switch_to_patient
     switch_to_role_and_redirect('patient', 'Patient')

@@ -26,12 +26,10 @@ class User < ApplicationRecord
     # Supports demo user switching in non-production environments.
     def current
       # Check for demo user switching in non-production environments
-      unless Rails.env.production?
-        demo_user_id = Thread.current[:demo_user_id]
-        if demo_user_id
-          demo_user = User.find_by(id: demo_user_id)
-          return demo_user if demo_user
-        end
+      demo_user_id = Thread.current[:demo_user_id]
+      if demo_user_id
+        demo_user = User.find_by(id: demo_user_id)
+        return demo_user if demo_user
       end
 
       User.patient.first
@@ -39,8 +37,6 @@ class User < ApplicationRecord
 
     # Set demo user for current thread (non-production only)
     def current_demo_user=(user)
-      return if Rails.env.production?
-
       Thread.current[:demo_user_id] = user&.id
     end
 

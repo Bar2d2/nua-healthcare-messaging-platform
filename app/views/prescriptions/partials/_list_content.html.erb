@@ -1,10 +1,11 @@
-<% if prescriptions.any? %>
-  <div class="list-group" id="prescriptions-items">
-    <% prescriptions.each do |prescription| %>
-      <%= render 'prescriptions/partials/prescription_item', prescription: prescription %>
-    <% end %>
-  </div>
+<!-- Always present target container for Turbo Streams -->
+<div class="list-group" id="prescriptions-items">
+  <% prescriptions.each do |prescription| %>
+    <%= render 'prescriptions/partials/prescription_item', prescription: prescription %>
+  <% end %>
+</div>
 
+<% if prescriptions.any? %>
   <!-- Pagination -->
   <div id="prescriptions-pagination-nav">
     <%= render 'shared/pagination_nav', pagy: pagy %>
@@ -15,8 +16,8 @@
     <%= render 'shared/pagination_info', pagy: pagy %>
   </div>
 <% else %>
-  <div class="text-center py-5">
-
+  <!-- Empty state content -->
+  <div class="text-center py-5" id="prescriptions-empty-state">
     <h5 class="text-muted mt-3"><%= t('prescriptions.index.no_prescriptions') %></h5>
     <p class="text-muted"><%= t('prescriptions.index.empty_message') %></p>
     <button type="button"

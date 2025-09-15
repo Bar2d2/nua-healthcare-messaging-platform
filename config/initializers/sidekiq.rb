@@ -1,81 +1,94 @@
-# Sidekiq Configuration for High-Performance Background Jobs
-# Optimized for message system background processing
+# frozen_string_literal: true
 
-# Skip Sidekiq initialization during asset precompilation
-unless ENV['RAILS_GROUPS'] == 'assets' || ENV['SECRET_KEY_BASE_DUMMY']
-  # Environment-specific Redis configuration
-  redis_config = case Rails.env
-                 when 'test'
-                   # Use separate test database to avoid conflicts
-                   { url: ENV.fetch('REDIS_URL', 'redis://localhost:6379/1') }
-                 when 'development'
-                   # Use default database with graceful fallback
-                   { url: ENV.fetch('REDIS_URL', 'redis://localhost:6379/0') }
-                 else
-                   # Production configuration with fallback
-                   { url: ENV.fetch('REDIS_URL', 'redis://localhost:6379/1') }
-                 end
+# Sidekiq configuration for production performance
+Sidekiq.configure_server do |config|
+  config.redis = { url: ENV.fetch('REDIS_URL', 'redis://localhost:6379/0') }
 
-# Test Redis connection before configuring Sidekiq
-redis_available = begin
-  redis_client = Redis.new(redis_config)
-  redis_client.ping == 'PONG'
-rescue Redis::CannotConnectError, Redis::ConnectionError
-  false
-ensure
-  redis_client&.close
+  # Sidekiq Enterprise features - comment out if using OSS
+  # config.cron do
+  #   # Cron jobs configuration
+  # end
+
+  # Performance monitoring
+  if Rails.env.production?
+    Rails.logger.info "✅ Sidekiq server configured with Redis"
+  end
+
+  # Memory usage optimization for production
+  if Rails.env.production?
+    config.death_handlers << ->(job, ex) do
+      Rails.logger.error "Sidekiq job #{job['class']} failed: #{ex.message}"
+    end
+  end
+
+  # Configure Redis connection pool
+  config.redis = {
+    url: ENV.fetch('REDIS_URL', 'redis://localhost:6379/0'),
+    size: ENV.fetch('SIDEKIQ_REDIS_POOL_SIZE', 10).to_i
+  }
+
+  # Error handling
+  config.error_handlers << lambda do |ex, ctx_hash|
+    Rails.logger.error "Sidekiq error: #{ex.message}"
+    Rails.logger.error ctx_hash
+  end
+
+  # Configure queues with priorities for broadcasting
+  # Include both prefixed (ActiveJob) and non-prefixed queues
+  env_prefix = case Rails.env
+               when 'development'
+                 'nua_messaging_development_'
+               when 'production'
+                 'nua_messaging_production_'
+               else
+                 ''
+               end
+
+  config.queues = [
+    "#{env_prefix}high_priority",
+    "#{env_prefix}default",
+    "#{env_prefix}low_priority",
+    "#{env_prefix}mailers",
+    'high_priority',  # Fallback for non-prefixed
+    'default',
+    'low_priority',
+    'mailers'
+  ]
 end
 
-if redis_available
-  Sidekiq.configure_server do |config|
-    config.redis = redis_config
+Sidekiq.configure_client do |config|
+  config.redis = { url: ENV.fetch('REDIS_URL', 'redis://localhost:6379/0') }
 
-    # Performance optimizations for Sidekiq 7
-    config.average_scheduled_poll_interval = 5
-
-    # Configure queues with priorities for broadcasting
-    # Include both prefixed (ActiveJob) and non-prefixed queues
-    env_prefix = Rails.env.development? ? 'nua_messaging_development_' : ''
-    config.queues = [
-      "#{env_prefix}high_priority",
-      "#{env_prefix}default",
-      "#{env_prefix}low_priority",
-      'high_priority',  # Fallback for non-prefixed
-      'default',
-      'low_priority'
-    ]
-
-    # Logging configuration
-    config.logger.level = Rails.env.test? ? Logger::WARN : Logger::INFO
+  if Rails.env.production?
+    Rails.logger.info "✅ Sidekiq client configured with Redis"
   end
 
-  Sidekiq.configure_client do |config|
-    config.redis = redis_config
-  end
+  # Configure Redis connection pool for client
+  config.redis = {
+    url: ENV.fetch('REDIS_URL', 'redis://localhost:6379/0'),
+    size: ENV.fetch('SIDEKIQ_CLIENT_REDIS_POOL_SIZE', 5).to_i
+  }
+end
 
-  Rails.logger.info "✅ Sidekiq configured with Redis" unless Rails.env.test?
-else
-  # Fallback configuration when Redis is not available
-  Rails.logger.warn "⚠️ Redis not available - Sidekiq will use testing mode" unless Rails.env.test?
-
-  # Only enable testing mode in test environment when Redis is not available
-  if Rails.env.test?
-    require 'sidekiq/testing'
-    Sidekiq::Testing.fake!
+# Only start Sidekiq server automatically in specific environments
+if defined?(Rails::Server) && Rails.env.development?
+  begin
+    require 'sidekiq/api'
+    Sidekiq::Stats.new.processed
+    Rails.logger.info "✅ Sidekiq connection verified"
+  rescue Redis::CannotConnectError => e
+    Rails.logger.warn "⚠️  Sidekiq Redis connection failed: #{e.message}"
+    Rails.logger.warn "Starting without background job processing"
   end
 end
 
-# Suppress Sidekiq logging in test environment
-Sidekiq.logger.level = Logger::WARN if Rails.env.test?
+# Performance optimization for production
+if Rails.env.production?
+  # Configure memory-efficient serialization
+  Sidekiq.default_job_options = {
+    'backtrace' => 10,  # Limit backtrace to save memory
+    'retry' => 3        # Limit retries for faster failure detection
+  }
 
-# Suppress Sidekiq testing API warnings in development
-if Rails.env.development?
-  # Ensure testing API is properly disabled in development
-  if defined?(Sidekiq::Testing)
-    Sidekiq::Testing.disable!
-  end
-
-  # Show Sidekiq activity in development for debugging
-  Sidekiq.logger.level = Logger::INFO
-end
+  Rails.logger.info "✅ Sidekiq production optimizations applied"
 end

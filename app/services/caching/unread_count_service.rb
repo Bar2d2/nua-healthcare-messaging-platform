@@ -5,8 +5,12 @@
 # Provides cache management for inbox unread counts with fallback to database
 module Caching
   class UnreadCountService
-    CACHE_TTL = 5.minutes
+    CACHE_TTL = 10.minutes # Increased TTL to reduce cache misses
     CACHE_KEY_PREFIX = 'inbox_unread_count'
+
+    # Connection pool for Redis to prevent connection overwhelming
+    CONNECTION_POOL_SIZE = 5
+    CONNECTION_POOL_TIMEOUT = 5
 
     class << self
       # Get cached unread count for an inbox
