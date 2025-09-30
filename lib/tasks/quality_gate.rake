@@ -76,20 +76,27 @@ namespace :quality_gate do
   task performance: :environment do
     puts '⚡ Running performance benchmarks...'
 
-    puts '📈 Running sequential performance test...'
-    sequential_exit = system('RAILS_ENV=development bundle exec rake sequential[10,5]')
+    puts '🔧 Setting up test users for performance tests...'
+    setup_exit = system('RAILS_ENV=development bundle exec rake performance_check:setup_users[100]')
+    unless setup_exit
+      puts '❌ Performance test user setup failed.'
+      exit(1)
+    end
+
+    puts '📈 Running sequential messaging performance test...'
+    sequential_exit = system('RAILS_ENV=development bundle exec rake sequential[100,10]')
     unless sequential_exit
       puts '❌ Sequential performance test failed.'
       exit(1)
     end
 
-    puts '🔥 Running concurrent performance test...'
-    concurrent_exit = system('RAILS_ENV=development bundle exec rake concurrent[5,3]')
+    puts '🔥 Running concurrent messaging performance test...'
+    concurrent_exit = system('RAILS_ENV=development bundle exec rake concurrent[100,10]')
     unless concurrent_exit
       puts '❌ Concurrent performance test failed.'
       exit(1)
     end
 
-    puts '✅ All performance benchmarks passed - both sequential and concurrent tests successful.'
+    puts '✅ All performance benchmarks passed - pure messaging tests successful.'
   end
 end

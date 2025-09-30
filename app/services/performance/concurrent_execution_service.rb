@@ -1,46 +1,63 @@
 # frozen_string_literal: true
 
 # Concurrent performance check for Redis + Sidekiq + Database
+# Only tests pure messaging performance with existing users
 class Performance::ConcurrentExecutionService < Performance::BaseService
-  def self.run(users: 5, messages: 2)
-    new.check(users, messages)
+  # Main method - always uses pure messaging (existing users only)
+  def self.run(users: 100, messages: 10)
+    new.check_messaging_only(users, messages)
   end
 
-  def check(users, messages)
+  # Pure messaging performance test with existing users
+  def check_messaging_only(users_count, messages_count)
     puts ""
-    puts "🔥 CONCURRENT Performance Check: #{users} users × #{messages} message(s) per user"
-    puts "   (Note: Tests simultaneous operations with threading)"
+    puts "⚡ CONCURRENT Performance Check: #{users_count} users × #{messages_count} messages"
+    puts "   (Note: Pure concurrent messaging performance with existing users)"
     puts "=" * 60
 
+    # Setup: Ensure we have enough existing users (outside of timing)
+    redis_works = test_redis
+    existing_users = get_existing_users(users_count, "PerfTest")
+
+    if existing_users.size < users_count
+      puts "⚠️  Need #{users_count} existing users, found #{existing_users.size}. Creating missing users..."
+      setup_existing_users(users_count, "PerfTest")
+      existing_users = get_existing_users(users_count, "PerfTest")
+    end
+
+    puts "✅ Using #{existing_users.size} existing users for pure concurrent messaging test"
+    puts ""
+
+    # START TIMING: Only message sending operations
     start_time = Time.current
     start_memory = get_memory_usage
     start_cpu = get_cpu_time
 
-    # What we're testing
-    redis_works = test_redis
-    users_created = create_users(users, "Concurrent")
-    results = send_messages(users_created, messages)
+    # Pure concurrent message sending performance test
+    results = send_messages(existing_users, messages_count)
 
+    # END TIMING
     total_time = Time.current - start_time
     end_memory = get_memory_usage
     end_cpu = get_cpu_time
     memory_used = end_memory - start_memory
     cpu_used = end_cpu - start_cpu
 
-    cleanup(users_created)
+    # Cleanup only messages (keep users for future tests)
+    cleanup_messages_only(existing_users)
 
     # Show results
-    show_results(users, messages, redis_works, results, total_time, memory_used, cpu_used)
+    show_results(users_count, messages_count, redis_works, results, total_time, memory_used, cpu_used)
 
-    # Return simple hash
+    # Return results hash
     {
-      users: users,
-      messages_per_user: messages,
+      users: users_count,
+      messages_per_user: messages_count,
       time_seconds: total_time.round(2),
       redis_working: redis_works,
       messages_sent: results[:sent],
       messages_failed: results[:failed],
-      concurrent_rate: results[:rate],
+      pure_messaging_rate: results[:rate],
       success: results[:failed] == 0
     }
   end
@@ -91,14 +108,17 @@ class Performance::ConcurrentExecutionService < Performance::BaseService
     expected = users * messages_per_user
     puts ""
     puts "=" * 60
+    puts "📊 CONCURRENT MESSAGING RESULTS"
     puts "⏱️  #{total_time.round(2)}s  |  🔧 Redis/Sidekiq: #{redis_works ? '✅' : '❌'}  |  📨 #{results[:sent]}/#{expected}"
     puts ""
-    puts "📨 #{results[:rate]} messages/sec (concurrent)"
+    puts "⚡ #{results[:rate]} messages/sec (pure concurrent messaging performance)"
     puts "📅 ~#{format_capacity(results[:rate])} messages/day capacity"
-    if memory_used > 0
+
+    if memory_used > 0 && results[:sent] > 0
       memory_per_msg = memory_used / results[:sent]
       puts "💾 #{format_memory(memory_used)} memory (#{memory_per_msg.round(2)}MB per message)"
     end
+
     if cpu_used > 0
       cpu_percentage = (cpu_used / total_time * 100).round(1)
       cpu_cores_used = (cpu_percentage / 100.0).round(1)
@@ -115,6 +135,4 @@ class Performance::ConcurrentExecutionService < Performance::BaseService
     puts "=" * 60
     puts ""
   end
-
-
 end

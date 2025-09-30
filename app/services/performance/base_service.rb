@@ -29,12 +29,50 @@ class Performance::BaseService
     users
   end
 
+  # Pre-create users for existing user scenario testing
+  def setup_existing_users(count, prefix = "PerfTest")
+    puts "🔧 Setting up existing users for performance testing..."
+    users = []
+    count.times do |i|
+      user = User.find_or_create_by(first_name: "#{prefix}#{i}") do |u|
+        u.last_name = "User"
+        u.is_patient = true
+        u.is_doctor = false
+        u.is_admin = false
+      end
+
+      # Ensure inbox and outbox exist (triggered by after_create callback)
+      user.create_inbox! unless user.inbox
+      user.create_outbox! unless user.outbox
+
+      users << user
+    end
+    puts "✅ Setup complete: #{users.size} existing users ready"
+    users
+  end
+
+  # NEW: Get existing users by prefix for pure messaging tests
+  def get_existing_users(count, prefix = "PerfTest")
+    User.where("first_name LIKE ?", "#{prefix}%")
+        .includes(:inbox, :outbox)  # Preload associations
+        .limit(count)
+        .to_a
+  end
+
   def cleanup(users)
     users.each do |user|
       Message.joins(:inbox).where(inboxes: { user_id: user.id }).delete_all
       user.inbox&.destroy
       user.outbox&.destroy
       user.destroy
+    end
+  end
+
+  # Cleanup only messages for existing user tests
+  def cleanup_messages_only(users)
+    users.each do |user|
+      Message.joins(:inbox).where(inboxes: { user_id: user.id }).delete_all
+      user.inbox&.update(unread_count: 0) if user.inbox
     end
   end
 

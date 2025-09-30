@@ -28,7 +28,7 @@
 - **💊 Prescription Management**: Lost prescription replacement with payment processing
 - **💳 Payment Integration**: Flaky provider simulation with auto-retry mechanisms
 - **📱 Real-time Updates**: Live UI updates via Turbo Streams
-- **📊 Performance Monitoring**: 1.6M+ messages/day capacity with comprehensive metrics
+- **📊 Performance Monitoring**: 5.5M+ messages/day capacity with comprehensive metrics
 
 ### **Technology Stack**
 - **Backend**: Ruby on Rails 7.2.2, PostgreSQL, Redis
@@ -94,7 +94,7 @@
 | **Admin Generation Workflow** | Streamlined prescription generation | Admin dashboard + PDF generation |
 | **Real-time Broadcasting** | Modern SPA-like experience | Optimized Turbo Streams |
 | **Global Notification System** | Consistent user feedback | Unified toast notifications |
-| **Performance Optimization** | 1.6M+ msg/day capacity | Background jobs + caching |
+| **Performance Optimization** | 5.5M+ msg/day capacity | Background jobs + caching |
 | **Comprehensive Testing** | 90.76% coverage + E2E tests | RSpec + Cucumber suites |
 | **Technical Documentation** | Maintainable codebase | Architecture guides + API docs |
 </details>

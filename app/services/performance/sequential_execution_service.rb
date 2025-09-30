@@ -1,50 +1,64 @@
 # frozen_string_literal: true
 
 # Sequential performance check for Redis + Sidekiq + Database
+# Only tests pure messaging performance with existing users
 class Performance::SequentialExecutionService < Performance::BaseService
-  def self.run(users: 10, messages: 5)
-    new.check(users, messages)
+  # Main method - always uses pure messaging (existing users only)
+  def self.run(users: 100, messages: 10)
+    new.check_messaging_only(users, messages)
   end
 
-  def check(users, messages)
+  # Pure messaging performance test with existing users
+  def check_messaging_only(users_count, messages_count)
     puts ""
-    puts "📈 SEQUENTIAL Performance Check: #{users} users × #{messages} messages"
-    puts "   (Note: Tests one operation at a time)"
+    puts "🚀 SEQUENTIAL Performance Check: #{users_count} users × #{messages_count} messages"
+    puts "   (Note: Pure message sending performance with existing users)"
     puts "=" * 60
 
-    # Start resource monitoring
+    # Setup: Ensure we have enough existing users (outside of timing)
+    redis_works = test_redis
+    existing_users = get_existing_users(users_count, "PerfTest")
+
+    if existing_users.size < users_count
+      puts "⚠️  Need #{users_count} existing users, found #{existing_users.size}. Creating missing users..."
+      setup_existing_users(users_count, "PerfTest")
+      existing_users = get_existing_users(users_count, "PerfTest")
+    end
+
+    puts "✅ Using #{existing_users.size} existing users for pure messaging test"
+    puts ""
+
+    # START TIMING: Only message sending operations
     start_time = Time.current
     start_memory = get_memory_usage
     start_cpu = get_cpu_time
 
-    # What we're testing
-    redis_works = test_redis
-    users_created = create_users(users, "Sequential")
+    # Pure message sending performance test
+    results = send_messages(existing_users, messages_count)
 
-    # Sequential message sending
-    results = send_messages(users_created, messages)
-
+    # END TIMING
     total_time = Time.current - start_time
     end_memory = get_memory_usage
     end_cpu = get_cpu_time
     memory_used = end_memory - start_memory
     cpu_used = end_cpu - start_cpu
 
-    cleanup(users_created)
+    # Cleanup only messages (keep users for future tests)
+    cleanup_messages_only(existing_users)
 
     # Show results
-    show_results(users, messages, redis_works, results, total_time, memory_used, cpu_used)
+    show_results(users_count, messages_count, redis_works, results, total_time, memory_used, cpu_used)
 
-    # Return simple hash
+    # Return results hash
     {
-      users: users,
-      messages_per_user: messages,
+      users: users_count,
+      messages_per_user: messages_count,
       time_seconds: total_time.round(2),
       redis_working: redis_works,
       messages_sent: results[:sent],
-      expected_messages: users * messages,
-
-      success: results[:sent] == (users * messages)
+      expected_messages: users_count * messages_count,
+      pure_messaging_rate: (results[:sent] / total_time).round(2),
+      success: results[:sent] == (users_count * messages_count)
     }
   end
 
@@ -76,34 +90,22 @@ class Performance::SequentialExecutionService < Performance::BaseService
     { sent: sent, failed: failed }
   end
 
-  def read_inboxes(users)
-    read = 0
-    users.each do |user|
-      begin
-        user.inbox.messages.limit(10).to_a
-        read += 1
-      rescue
-        # Failed to read
-      end
-    end
-    puts "📥 Read #{read} inboxes"
-    puts ""
-    read
-  end
-
   def show_results(users, messages_per_user, redis_works, results, total_time, memory_used = 0, cpu_used = 0)
     expected = users * messages_per_user
     rate = (results[:sent] / total_time).round(1)
 
     puts "=" * 60
+    puts "📊 SEQUENTIAL MESSAGING RESULTS"
     puts "⏱️  #{total_time.round(2)}s  |  🔧 Redis/Sidekiq: #{redis_works ? '✅' : '❌'}  |  📨 #{results[:sent]}/#{expected}"
     puts ""
-    puts "📈 #{rate} messages/sec (sequential)"
+    puts "🚀 #{rate} messages/sec (pure messaging performance)"
     puts "📅 ~#{format_capacity(rate)} messages/day capacity"
-    if memory_used > 0
+
+    if memory_used > 0 && results[:sent] > 0
       memory_per_msg = memory_used / results[:sent]
       puts "💾 #{format_memory(memory_used)} memory (#{memory_per_msg.round(2)}MB per message)"
     end
+
     if cpu_used > 0
       cpu_percentage = (cpu_used / total_time * 100).round(1)
       cpu_cores_used = (cpu_percentage / 100.0).round(1)
@@ -120,6 +122,4 @@ class Performance::SequentialExecutionService < Performance::BaseService
     puts "=" * 60
     puts ""
   end
-
-
 end

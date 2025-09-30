@@ -74,3 +74,10 @@ log/*.log.*
 # Ignore Redis database files
 dump.rdb
 *.rdb
+
+# Ignore Rails master key (contains encryption secrets)
+/config/master.key
+
+# Ignore Kamal deployment secrets
+/.kamal/
+.kamal/
