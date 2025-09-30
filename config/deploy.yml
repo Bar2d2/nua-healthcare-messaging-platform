@@ -1,0 +1,89 @@
+# Name of your application. Used to uniquely configure containers.
+service: nua-healthcare-app
+
+# Name of the container image.
+image: bar2d2/nua-healthcare-app
+
+# Build configuration
+builder:
+  arch: amd64
+  secrets:
+    - RAILS_MASTER_KEY
+
+# Deploy to these servers.
+servers:
+  web:
+    - 64.226.107.174
+
+  job:
+    hosts:
+      - 64.226.107.174
+    cmd: bundle exec sidekiq -c 5 -q nua_messaging_production_high_priority -q nua_messaging_production_default -q nua_messaging_production_low_priority -q nua_messaging_production_mailers -q high_priority -q default -q low_priority -q mailers
+    env:
+      clear:
+        SIDEKIQ_CONCURRENCY: 5
+        SIDEKIQ_TIMEOUT: 25
+        SIDEKIQ_RETRY: 3
+
+# SSH configuration
+ssh:
+  user: root
+  keys:
+    - ~/.ssh/id_ed25519
+    - ~/.ssh/id_rsa
+  keys_only: true
+
+# Boot configuration - wait for accessories
+boot:
+  limit: 1
+  wait: 30
+
+# Credentials for your image host.
+registry:
+  username: bar2d2
+  password:
+    - KAMAL_REGISTRY_PASSWORD
+
+asset_path: /rails/public/assets
+
+# Inject ENV variables into containers (secrets come from .env).
+env:
+  clear:
+    HOSTNAME: 64.226.107.174
+    DB_HOST: nua-healthcare-app-db
+    RAILS_SERVE_STATIC_FILES: true
+    RAILS_LOG_TO_STDOUT: true
+  secret:
+    - KAMAL_REGISTRY_PASSWORD
+    - RAILS_MASTER_KEY
+    - POSTGRES_PASSWORD
+    - REDIS_URL
+    - DATABASE_URL
+
+# Use accessory services (secrets come from .env).
+accessories:
+  db:
+    image: postgres:16
+    host: 64.226.107.174
+    port: 5432
+    env:
+      clear:
+        POSTGRES_DB: "nua_messaging_production"
+      secret:
+        - POSTGRES_PASSWORD
+    directories:
+      - data:/var/lib/postgresql/data
+  redis:
+    image: redis:7.0
+    port: 6379
+    host: 64.226.107.174
+    directories:
+      - data:/data
+
+# Proxy configuration with SSL enabled
+proxy:
+  ssl: true
+  host: nua.doctor
+  app_port: 3000
+  healthcheck:
+    path: /up

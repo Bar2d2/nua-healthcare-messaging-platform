@@ -4,9 +4,9 @@
 # Handles admin message routing and administrative communications
 
 When('I switch to admin view') do
-  # Use the demo user switching system (same as real app)
+  # Override User.current for test context with correct signature
   User.class_eval do
-    def self.current
+    def self.current(_session = nil)
       User.find_by(first_name: 'Obi-wan', last_name: 'Kenobi')
     end
   end

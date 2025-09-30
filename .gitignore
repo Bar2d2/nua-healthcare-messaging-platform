@@ -78,6 +78,6 @@ dump.rdb
 # Ignore Rails master key (contains encryption secrets)
 /config/master.key
 
-# Ignore Kamal deployment secrets
+# Ignore Kamal deployment secrets (contains sensitive deployment data)
 /.kamal/
-.kamal/
+.kamal/secrets

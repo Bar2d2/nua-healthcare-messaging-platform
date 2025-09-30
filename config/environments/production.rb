@@ -49,7 +49,11 @@ Rails.application.configure do
   # config.assume_ssl = true
 
   # Force all access to the app over SSL, use Strict-Transport-Security, and use secure cookies.
-  config.force_ssl = true
+   # Disabled for Kamal deployment - proxy handles SSL termination
+   config.force_ssl = false
+
+   # Skip http-to-https redirect for the health check endpoint (even when force_ssl is false)
+   config.ssl_options = { redirect: { exclude: ->(request) { request.path == "/up" } } }
 
   # Log to STDOUT by default
   config.logger = ActiveSupport::Logger.new($stdout)
@@ -68,8 +72,9 @@ Rails.application.configure do
   # config.cache_store = :mem_cache_store
 
   # Use a real queuing backend for Active Job (and separate queues per environment).
-  # config.active_job.queue_adapter = :resque
-  # config.active_job.queue_name_prefix = "nua_messaging_production"
+  # Use Sidekiq for background job processing in production
+  config.active_job.queue_adapter = :sidekiq
+  config.active_job.queue_name_prefix = "nua_messaging_production"
 
   config.action_mailer.perform_caching = false
 
@@ -87,11 +92,21 @@ Rails.application.configure do
   # Do not dump schema after migrations.
   config.active_record.dump_schema_after_migration = false
 
+  # Performance optimizations for production
+
+  # Optimize ActionCable performance
+  config.action_cable.mount_path = '/cable'
+  config.action_cable.allowed_request_origins = [
+    /http:\/\/localhost*/,
+    /https:\/\/nua\.doctor/,
+    /https:\/\/.*\.nua\.doctor/
+  ]
+
   # Enable DNS rebinding protection and other `Host` header attacks.
   # config.hosts = [
   #   "example.com",     # Allow requests from example.com
   #   /.*\.example\.com/ # Allow requests from subdomains like `www.example.com`
   # ]
   # Skip DNS rebinding protection for the default health check endpoint.
-  # config.host_authorization = { exclude: ->(request) { request.path == "/up" } }
+  config.host_authorization = { exclude: ->(request) { request.path == "/up" } }
 end

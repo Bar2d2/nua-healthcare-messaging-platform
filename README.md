@@ -1,11 +1,11 @@
 # 🏥 Nua Medical Messaging Platform
 
-[![Quality Gate](https://img.shields.io/badge/Quality%20Gate-PASSING-brightgreen)](.) [![Test Coverage](https://img.shields.io/badge/Coverage-90.76%25-brightgreen)](.) [![Performance](https://img.shields.io/badge/Performance-1.6M%2B%20msg%2Fday-blue)](.) [![API Documentation](https://img.shields.io/badge/API-Swagger%20Documented-orange)](.)
+[![Quality Gate](https://img.shields.io/badge/Quality%20Gate-PASSING-brightgreen)](.) [![Test Coverage](https://img.shields.io/badge/Coverage-90.76%25-brightgreen)](.) [![Performance](https://img.shields.io/badge/Performance-5.4M%2B%20msg%2Fday-blue)](.) [![API Documentation](https://img.shields.io/badge/API-Swagger%20Documented-orange)](.)
 
 > **Enterprise-grade medical communication platform with prescription management, real-time messaging, and secure payment processing.**
 
 ## 🌐 **Live Demo**
-**🚀 [Try the live application here](https://nua-healthcare-app.fly.dev)**
+**🚀 [Try the live application here](https://nua.doctor)**
 
 *Experience the full messaging system with realistic medical scenarios, prescription management, and real-time updates.*
 
@@ -28,7 +28,7 @@
 - **💊 Prescription Management**: Lost prescription replacement with payment processing
 - **💳 Payment Integration**: Flaky provider simulation with auto-retry mechanisms
 - **📱 Real-time Updates**: Live UI updates via Turbo Streams
-- **📊 Performance Monitoring**: 5.5M+ messages/day capacity with comprehensive metrics
+- **📊 Performance Monitoring**: 5.4M+ messages/day capacity with comprehensive metrics
 
 ### **Technology Stack**
 - **Backend**: Ruby on Rails 7.2.2, PostgreSQL, Redis
@@ -94,7 +94,7 @@
 | **Admin Generation Workflow** | Streamlined prescription generation | Admin dashboard + PDF generation |
 | **Real-time Broadcasting** | Modern SPA-like experience | Optimized Turbo Streams |
 | **Global Notification System** | Consistent user feedback | Unified toast notifications |
-| **Performance Optimization** | 5.5M+ msg/day capacity | Background jobs + caching |
+| **Performance Optimization** | 1.6M+ msg/day capacity | Background jobs + caching |
 | **Comprehensive Testing** | 90.76% coverage + E2E tests | RSpec + Cucumber suites |
 | **Technical Documentation** | Maintainable codebase | Architecture guides + API docs |
 </details>
@@ -176,10 +176,31 @@ flowchart TD
 
 | Metric | Target | Achieved | Status |
 |--------|--------|----------|--------|
-| **Message Throughput** | High volume support | 36-51 msg/sec (varies) | ✅ **EXCEEDED** |
-| **Daily Capacity** | Hundreds of thousands | 1.6M+ messages/day | ✅ **EXCEEDED** |
+| **Sequential Messaging** | High volume support | 120+ msg/sec | ✅ **EXCEEDED** |
+| **Concurrent Messaging** | Parallel processing | 124+ msg/sec | ✅ **EXCEEDED** |
+| **Daily Capacity** | Hundreds of thousands | 5.4M+ messages/day | ✅ **EXCEEDED** |
 | **Test Coverage** | > 90% | 90.76% | ✅ **ACHIEVED** |
 | **Quality Gates** | All passing | 100% pass rate | ✅ **ACHIEVED** |
+
+### **🚀 Performance Testing**
+
+The application includes comprehensive performance benchmarks to ensure messaging system scalability:
+
+```bash
+# Pure messaging performance tests (recommended)
+rake performance_check:setup_users[200]     # Create test users (one-time)
+rake sequential[100,10]                     # 100 users × 10 messages sequentially
+rake concurrent[100,10]                     # 100 users × 10 messages concurrently
+
+# Quality gate with performance benchmarks
+rake quality_gate:performance              # Automated performance validation
+```
+
+**Key Performance Features:**
+- ✅ **Pure messaging throughput** - Tests only message sending (no user creation overhead)
+- ✅ **Realistic load testing** - Uses existing users (production-like scenario)
+- ✅ **Concurrent processing** - Multi-threaded message sending
+- ✅ **Quality gate integration** - Automated performance validation in CI/CD
 
 ## 🚀 Local Development
 

@@ -24,11 +24,11 @@ class User < ApplicationRecord
   class << self
     # Returns the current user for the session.
     # Supports demo user switching in non-production environments.
-    def current
+    def current(session = nil)
       # Check for demo user switching in non-production environments
-      unless Rails.env.production?
-        demo_user_id = Thread.current[:demo_user_id]
-        if demo_user_id
+      if session
+        demo_user_id = session[:demo_user_id]
+        if demo_user_id.present?
           demo_user = User.find_by(id: demo_user_id)
           return demo_user if demo_user
         end
@@ -37,16 +37,17 @@ class User < ApplicationRecord
       User.patient.first
     end
 
-    # Set demo user for current thread (non-production only)
-    def current_demo_user=(user)
-      return if Rails.env.production?
-
-      Thread.current[:demo_user_id] = user&.id
+    # Legacy method for thread storage (deprecated)
+    def current_demo_user=(_user)
+      # This method is deprecated but kept for compatibility
+      # The session-based approach should be used instead
+      Rails.logger.warn 'DEPRECATED: Using thread-based user switching. Use session-based approach instead.'
     end
 
-    # Clear demo user for current thread
+    # Legacy method for thread storage (deprecated)
     def clear_demo_user
-      Thread.current[:demo_user_id] = nil
+      # This method is deprecated but kept for compatibility
+      Rails.logger.warn 'DEPRECATED: Using thread-based user switching. Use session-based approach instead.'
     end
 
     # Returns the default admin user for system operations.

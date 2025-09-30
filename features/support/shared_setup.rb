@@ -41,30 +41,17 @@ module SharedSetup
 
   def setup_authentication
     @current_user = @patient
-    # Set the current user for the application
+    # Override User.current for test context with correct signature
     User.class_eval do
-      def self.current
+      def self.current(_session = nil)
         User.find_by(first_name: 'Luke', last_name: 'Skywalker')
       end
     end
   end
 
   def reset_user_current
-    # Reset User.current to the original implementation
-    User.class_eval do
-      def self.current
-        # Check for demo user switching in non-production environments
-        unless Rails.env.production?
-          demo_user_id = Thread.current[:demo_user_id]
-          if demo_user_id
-            demo_user = User.find_by(id: demo_user_id)
-            return demo_user if demo_user
-          end
-        end
-
-        User.patient.first
-      end
-    end
+    # Clear demo user switching to return to default
+    # No need to override - the original implementation handles this properly
   end
 
   def cleanup_test_data

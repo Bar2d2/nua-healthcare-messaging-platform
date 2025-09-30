@@ -4,13 +4,15 @@
 # Provides session-based user switching without affecting authentication logic.
 class UserSwitchingService
   class << self
-    # Switch to a specific user role and store in thread
+    # Switch to a specific user role and store in session only
     def switch_to_role(session, role)
       user = find_user_by_role(role)
 
-      # Store in both session (for persistence) and thread (for immediate access)
-      session[:demo_user_id] = user&.id
-      User.current_demo_user = user
+      if user
+        store_user_in_session(session, user)
+      else
+        log_role_switch_failure(role)
+      end
 
       user
     end
@@ -26,7 +28,7 @@ class UserSwitchingService
     # Clear demo user switching (return to default)
     def clear_demo_user(session)
       session.delete(:demo_user_id)
-      User.clear_demo_user
+      Rails.logger.info 'Cleared demo user switching - returned to default user'
     end
 
     # Check if demo switching is active
@@ -34,13 +36,42 @@ class UserSwitchingService
       session[:demo_user_id].present?
     end
 
-    # Restore demo user from session to thread (for new requests)
+    # Validate and clean session data (no thread restoration needed)
     def restore_demo_user_from_session(session)
       demo_user_id = session[:demo_user_id]
       return unless demo_user_id
 
+      validate_and_log_demo_user(session, demo_user_id)
+    end
+
+    private
+
+    def store_user_in_session(session, user)
+      session[:demo_user_id] = user.id
+      Rails.logger.info "Switched to demo user: #{user.role} (#{user.full_name})"
+    end
+
+    def log_role_switch_failure(role)
+      Rails.logger.error "Failed to find user for role: #{role}"
+    end
+
+    def validate_and_log_demo_user(session, demo_user_id)
       user = User.find_by(id: demo_user_id)
-      User.current_demo_user = user if user
+
+      if user
+        log_demo_user_validation_success(user)
+      else
+        clear_invalid_session_data(session, demo_user_id)
+      end
+    end
+
+    def log_demo_user_validation_success(user)
+      Rails.logger.debug { "Demo user context validated: #{user.role} (#{user.full_name})" }
+    end
+
+    def clear_invalid_session_data(session, demo_user_id)
+      session.delete(:demo_user_id)
+      Rails.logger.warn "Invalid demo user ID #{demo_user_id} removed from session"
     end
 
     # Get available roles for switching
@@ -51,8 +82,6 @@ class UserSwitchingService
         { role: 'admin', label: '⚙️ Admin', user: User.admin.first }
       ].select { |role_info| role_info[:user].present? }
     end
-
-    private
 
     def find_user_by_role(role)
       patient_user = User.patient.first
